@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/WhiteRoseLK/neossh/internal/core/domain"
 	"github.com/WhiteRoseLK/neossh/internal/core/ports"
@@ -192,12 +193,73 @@ func (sd *ServerDetails) formatKeyTypeBadge(sshKey *domain.SSHKey) string {
 	return badge
 }
 
+func (sd *ServerDetails) renderCertBasic(cert *domain.SSHCertificate) string {
+	if cert == nil {
+		return ""
+	}
+	badge, desc := domain.FormatCertStatusBadge(cert)
+	if desc != "" {
+		return fmt.Sprintf("%s (%s)", badge, desc)
+	}
+	return badge
+}
+
+func (sd *ServerDetails) renderCertDetailsSection(cert *domain.SSHCertificate) string {
+	if cert == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+	sb.WriteString("\n[::b]SSH Certificate Details[-]\n")
+	fmt.Fprintf(&sb, "  Path: [white]%s[-]\n", cert.Path)
+	if cert.IsImplicit {
+		sb.WriteString("  Source: [cyan]Implicit (<IdentityFile>-cert.pub)[-]\n")
+	} else {
+		sb.WriteString("  Source: [cyan]Explicit CertificateFile[-]\n")
+	}
+
+	badge, desc := domain.FormatCertStatusBadge(cert)
+	if desc != "" {
+		fmt.Fprintf(&sb, "  Status: %s (%s)\n", badge, desc)
+	} else {
+		fmt.Fprintf(&sb, "  Status: %s\n", badge)
+	}
+
+	if cert.FileExists {
+		if !cert.ValidBefore.IsZero() {
+			fmt.Fprintf(&sb, "  Valid To: [white]%s[-]\n", cert.ValidBefore.Format("2006-01-02 15:04:05"))
+		}
+		if !cert.ValidAfter.IsZero() {
+			fmt.Fprintf(&sb, "  Valid From: [white]%s[-]\n", cert.ValidAfter.Format("2006-01-02 15:04:05"))
+		}
+		if cert.Lifetime > 0 && cert.Lifetime < time.Duration(1<<60) {
+			fmt.Fprintf(&sb, "  Lifetime: [white]%s[-]\n", domain.FormatDuration(cert.Lifetime))
+		}
+		if cert.KeyID != "" {
+			fmt.Fprintf(&sb, "  Key ID: [white]%s[-]\n", cert.KeyID)
+		}
+		if len(cert.Principals) > 0 {
+			fmt.Fprintf(&sb, "  Principals: [white]%s[-]\n", strings.Join(cert.Principals, ", "))
+		}
+		if cert.Serial > 0 {
+			fmt.Fprintf(&sb, "  Serial: [white]%d[-]\n", cert.Serial)
+		}
+	}
+
+	return sb.String()
+}
+
 func (sd *ServerDetails) UpdateServer(server domain.Server) {
 	lastSeen := server.LastSeen.Format("2006-01-02 15:04:05")
 	if server.LastSeen.IsZero() {
 		lastSeen = i18n.T("details.never")
 	}
 	serverKey := sd.renderKeyWithBadges(server)
+	cert := domain.InspectServerCertificate(server)
+	certLine := ""
+	if cert != nil {
+		certLine = fmt.Sprintf("  Cert: %s\n", sd.renderCertBasic(cert))
+	}
 
 	pinnedStr := "true"
 	if server.PinnedAt.IsZero() {
@@ -243,11 +305,11 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 
 	text := fmt.Sprintf(
 		"[::b]%s[-]\n\n[::b]%s[-]\n  Host: [white]%s[-]\n  User: [white]%s[-]\n"+
-			"  Port: [white]%s[-]\n  Key:  %s\n  Group: [white]%s[-]\n"+
+			"  Port: [white]%s[-]\n  Key:  %s\n%s  Group: [white]%s[-]\n"+
 			"  Tags: %s\n  Pinned: [white]%s[-]\n  Hidden: [white]%s[-]\n"+
 			"  Last SSH: %s\n  SSH Count: [white]%d[-]\n",
 		aliasText, i18n.T("details.label.basic"), hostText, userText, portText,
-		serverKey, groupText, tagsText, pinnedStr, hiddenStr,
+		serverKey, certLine, groupText, tagsText, pinnedStr, hiddenStr,
 		lastSeen, server.SSHCount)
 
 	// Add SSH Key Details section if key is configured
@@ -287,6 +349,8 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 			text += "  Status: [dim]🔓 Unencrypted[-]\n"
 		}
 	}
+
+	text += sd.renderCertDetailsSection(cert)
 
 	// Advanced settings section (only show non-empty fields)
 	// Organized by logical grouping for better readability
@@ -336,6 +400,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 			name: "Authentication",
 			fields: []fieldEntry{
 				{"PubkeyAuthentication", server.PubkeyAuthentication},
+				{"CertificateFile", server.CertificateFile},
 				{"PubkeyAcceptedAlgorithms", server.PubkeyAcceptedAlgorithms},
 				{"HostbasedAcceptedAlgorithms", server.HostbasedAcceptedAlgorithms},
 				{"Password (sshpass)", maskedPassword(server.Password)},

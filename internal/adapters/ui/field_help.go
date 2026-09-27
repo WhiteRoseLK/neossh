@@ -248,6 +248,14 @@ var fieldHelpData = map[string]FieldHelp{
 		Default:     "yes",
 		Category:    "Authentication",
 	},
+	"CertificateFile": {
+		Field:       "CertificateFile",
+		Description: "Path to the SSH certificate file for public key authentication.",
+		Syntax:      "<path>",
+		Examples:    []string{"~/.ssh/id_ed25519-cert.pub", "~/.ssh/user-cert.pub"},
+		Default:     "",
+		Category:    "Authentication",
+	},
 	"PasswordAuthentication": {
 		Field:       "PasswordAuthentication",
 		Description: "Enable or disable password authentication.",

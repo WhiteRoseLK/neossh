@@ -644,6 +644,9 @@ func addAuthOptions(parts *[]string, s domain.Server) {
 	if s.IdentitiesOnly != "" {
 		*parts = append(*parts, "-o", fmt.Sprintf("IdentitiesOnly=%s", s.IdentitiesOnly))
 	}
+	if s.CertificateFile != "" {
+		*parts = append(*parts, "-o", fmt.Sprintf("CertificateFile=%s", quoteIfNeeded(s.CertificateFile)))
+	}
 	if s.AddKeysToAgent != "" {
 		*parts = append(*parts, "-o", fmt.Sprintf("AddKeysToAgent=%s", s.AddKeysToAgent))
 	}

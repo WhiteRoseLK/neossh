@@ -412,3 +412,56 @@ Host "single-quoted-server"
 		t.Errorf("expected updated values in saved config:\n%s", saved)
 	}
 }
+
+func TestCertificateFile_CRUD(t *testing.T) {
+	fs := newMemFS(t)
+	defer fs.cleanup()
+
+	main := "/home/u/.ssh/config"
+	fs.write(main, "")
+	tmpMeta := filepath.Join(t.TempDir(), "metadata.json")
+	r := newRepoForFS(t, fs, tmpMeta)
+
+	server := domain.Server{
+		Alias:           "cert-host",
+		Host:            "192.168.1.100",
+		User:            "root",
+		CertificateFile: "~/.ssh/id_ed25519-cert.pub",
+		SourceFile:      main,
+	}
+
+	if err := r.AddServer(server); err != nil {
+		t.Fatalf("AddServer failed: %v", err)
+	}
+
+	servers, err := r.ListServers("")
+	if err != nil {
+		t.Fatalf("ListServers failed: %v", err)
+	}
+	if len(servers) != 1 {
+		t.Fatalf("expected 1 server, got %d", len(servers))
+	}
+	if servers[0].CertificateFile != "~/.ssh/id_ed25519-cert.pub" {
+		t.Errorf("expected CertificateFile '~/.ssh/id_ed25519-cert.pub', got %q", servers[0].CertificateFile)
+	}
+
+	saved := fs.read(main)
+	if !strings.Contains(saved, "CertificateFile ~/.ssh/id_ed25519-cert.pub") {
+		t.Errorf("expected config to contain CertificateFile, got:\n%s", saved)
+	}
+
+	// Update CertificateFile
+	updated := servers[0]
+	updated.CertificateFile = "~/.ssh/custom-cert.pub"
+	if err := r.UpdateServer(servers[0], updated); err != nil {
+		t.Fatalf("UpdateServer failed: %v", err)
+	}
+
+	servers, err = r.ListServers("")
+	if err != nil {
+		t.Fatalf("ListServers after update failed: %v", err)
+	}
+	if servers[0].CertificateFile != "~/.ssh/custom-cert.pub" {
+		t.Errorf("expected updated CertificateFile '~/.ssh/custom-cert.pub', got %q", servers[0].CertificateFile)
+	}
+}

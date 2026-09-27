@@ -193,6 +193,7 @@ func (r *Repository) createHostFromServer(server domain.Server) *ssh_config.Host
 	r.addKVNodeIfNotEmpty(host, "PasswordAuthentication", server.PasswordAuthentication)
 	r.addKVNodeIfNotEmpty(host, "PreferredAuthentications", server.PreferredAuthentications)
 	r.addKVNodeIfNotEmpty(host, "IdentitiesOnly", server.IdentitiesOnly)
+	r.addKVNodeIfNotEmpty(host, "CertificateFile", domain.ToTildePath(server.CertificateFile))
 	r.addKVNodeIfNotEmpty(host, "AddKeysToAgent", server.AddKeysToAgent)
 	r.addKVNodeIfNotEmpty(host, "IdentityAgent", server.IdentityAgent)
 
@@ -352,6 +353,7 @@ func scalarFieldMap(s domain.Server) map[string]string {
 		"hostbasedkeytypes":               s.HostbasedAcceptedAlgorithms,
 		"hostbasedacceptedkeytypes":       s.HostbasedAcceptedAlgorithms,
 		"identitiesonly":                  s.IdentitiesOnly,
+		"certificatefile":                 domain.ToTildePath(s.CertificateFile),
 		"addkeystoagent":                  s.AddKeysToAgent,
 		"identityagent":                   s.IdentityAgent,
 		"kbdinteractiveauthentication":    s.KbdInteractiveAuthentication,
@@ -535,6 +537,7 @@ func (r *Repository) getProperKeyCase(key string) string {
 		"hostbasedkeytypes":               "HostbasedAcceptedAlgorithms", // Deprecated alias (since OpenSSH 8.5)
 		"hostbasedacceptedkeytypes":       "HostbasedAcceptedAlgorithms", // Deprecated alias (since OpenSSH 8.5)
 		"identitiesonly":                  "IdentitiesOnly",
+		"certificatefile":                 "CertificateFile",
 		"addkeystoagent":                  "AddKeysToAgent",
 		"identityagent":                   "IdentityAgent",
 		"kbdinteractiveauthentication":    "KbdInteractiveAuthentication",
