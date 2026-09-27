@@ -52,6 +52,7 @@ var (
 	langFlag          string
 	scpFlag           string
 	sshfsFlag         string
+	tunnelFlag        string
 	preConnectFlag    string
 	defaultKeyFlag    string
 	passwordFlag      string
@@ -217,6 +218,10 @@ func newRootCmd() *cobra.Command {
 				return handleSSHFSFlag(serverService, sshfsFlag)
 			}
 
+			if tunnelFlag != "" {
+				return handleTunnelFlag(serverService, tunnelFlag)
+			}
+
 			if preConnectFlag != "" {
 				_ = os.Setenv("NEOSSH_PRE_CONNECT_HOOK", preConnectFlag)
 			}
@@ -301,6 +306,12 @@ func newRootCmd() *cobra.Command {
 		&sshfsFlag, "sshfs", "", "generate SSHFS remote mount command for server alias (e.g. --sshfs myserver)",
 	)
 	cmd.PersistentFlags().StringVar(
+		&tunnelFlag, "tunnel", "", "generate SSH port forwarding / tunnel commands for server alias (e.g. --tunnel myserver)",
+	)
+	cmd.PersistentFlags().StringVar(
+		&tunnelFlag, "forward", "", "generate SSH port forwarding / tunnel commands for server alias (alias for --tunnel)",
+	)
+	cmd.PersistentFlags().StringVar(
 		&preConnectFlag, "pre-connect", "", "run local hook command before SSH connect (supports %h, %p, %r, %n)",
 	)
 	cmd.PersistentFlags().StringVar(
@@ -357,6 +368,16 @@ func newRootCmd() *cobra.Command {
 		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
 	})
 	_ = cmd.RegisterFlagCompletionFunc("sshfs", func(
+		cmd *cobra.Command, _ []string, toComplete string,
+	) ([]string, cobra.ShellCompDirective) {
+		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
+	})
+	_ = cmd.RegisterFlagCompletionFunc("tunnel", func(
+		cmd *cobra.Command, _ []string, toComplete string,
+	) ([]string, cobra.ShellCompDirective) {
+		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
+	})
+	_ = cmd.RegisterFlagCompletionFunc("forward", func(
 		cmd *cobra.Command, _ []string, toComplete string,
 	) ([]string, cobra.ShellCompDirective) {
 		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
@@ -726,6 +747,53 @@ func handleSSHFSFlag(serverService ports.ServerService, alias string) error {
 
 	if err := clipboard.WriteAll(mountCmd); err == nil {
 		fmt.Println("\n✓ Copied default mount command to system clipboard.")
+	}
+	return nil
+}
+
+func handleTunnelFlag(serverService ports.ServerService, alias string) error {
+	servers, err := serverService.ListServers("")
+	if err != nil {
+		return fmt.Errorf("failed to list servers: %w", err)
+	}
+
+	var found *domain.Server
+	for i := range servers {
+		if strings.EqualFold(servers[i].Alias, alias) {
+			found = &servers[i]
+			break
+		}
+	}
+
+	if found == nil {
+		return fmt.Errorf("server alias %q not found", alias)
+	}
+
+	localCmd := ui.BuildForwardCommand(*found, ui.ForwardTypeLocal, "5432", "localhost", "5432", "", true, true)
+	remoteCmd := ui.BuildForwardCommand(*found, ui.ForwardTypeRemote, "8080", "localhost", "80", "", true, true)
+	dynCmd := ui.BuildForwardCommand(*found, ui.ForwardTypeDynamic, "1080", "", "", "", true, true)
+
+	fmt.Printf("SSH Port Forwarding & Tunnel Commands for [%s]:\n\n", found.Alias)
+	fmt.Printf("• Local Forwarding (-L local_port:target_host:target_port):\n  %s\n\n", localCmd)
+	fmt.Printf("• Remote Forwarding (-R remote_port:target_host:target_port):\n  %s\n\n", remoteCmd)
+	fmt.Printf("• Dynamic SOCKS5 Proxy (-D local_port):\n  %s\n\n", dynCmd)
+
+	settingsMgr := ui.NewDefaultSettingsManager()
+	if settingsMgr != nil {
+		profiles, _ := settingsMgr.LoadTunnelProfiles(found.Alias)
+		if len(profiles) > 0 {
+			fmt.Printf("Saved Favorite Profiles for [%s]:\n", found.Alias)
+			for _, p := range profiles {
+				onlyFw := p.Mode != ui.ForwardModeForwardSSH
+				cmdStr := ui.BuildForwardCommand(*found, p.Type, p.Port, p.Host, p.HostPort, p.BindAddress, onlyFw, true)
+				fmt.Printf("• %s (%s):\n  %s\n", p.Name, p.Type, cmdStr)
+			}
+			fmt.Println()
+		}
+	}
+
+	if err := clipboard.WriteAll(localCmd); err == nil {
+		fmt.Println("✓ Copied default Local forward command to system clipboard.")
 	}
 	return nil
 }

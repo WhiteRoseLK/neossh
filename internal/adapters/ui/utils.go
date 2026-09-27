@@ -474,6 +474,92 @@ func BuildSSHFSUnmountCommand(localMountPoint string) string {
 		quoteIfNeeded(localMountPoint), quoteIfNeeded(localMountPoint))
 }
 
+// BuildForwardSpec constructs the forwarding spec string (e.g. "5432:localhost:5432", "0.0.0.0:8080:remote:80", "1080").
+func BuildForwardSpec(fType, port, host, hostPort, bindAddr string) string {
+	port = strings.TrimSpace(port)
+	host = strings.TrimSpace(host)
+	hostPort = strings.TrimSpace(hostPort)
+	bindAddr = strings.TrimSpace(bindAddr)
+
+	if fType == ForwardTypeDynamic {
+		if bindAddr != "" {
+			return bindAddr + ":" + port
+		}
+		return port
+	}
+
+	spec := port + ":" + host + ":" + hostPort
+	if bindAddr != "" {
+		spec = bindAddr + ":" + spec
+	}
+	return spec
+}
+
+// BuildForwardArgs constructs the slice of SSH arguments for port forwarding (e.g. ["-L", "5432:localhost:5432"]).
+func BuildForwardArgs(fType, port, host, hostPort, bindAddr string) []string {
+	spec := BuildForwardSpec(fType, port, host, hostPort, bindAddr)
+	var flag string
+	switch fType {
+	case ForwardTypeDynamic:
+		flag = "-D"
+	case ForwardTypeRemote:
+		flag = "-R"
+	default:
+		flag = "-L"
+	}
+	return []string{flag, spec}
+}
+
+// BuildForwardCommand constructs the full SSH command string (e.g. "ssh -N -L 5432:localhost:5432 myalias").
+func BuildForwardCommand(s domain.Server, fType, port, host, hostPort, bindAddr string, onlyForward, useAlias bool) string {
+	args := []string{"ssh"}
+	if onlyForward {
+		args = append(args, "-N")
+	}
+
+	p := strings.TrimSpace(port)
+	if p == "" {
+		p = "<port>"
+	}
+	h := strings.TrimSpace(host)
+	if h == "" {
+		h = "localhost"
+	}
+	hp := strings.TrimSpace(hostPort)
+	if hp == "" {
+		hp = "<hostport>"
+	}
+
+	fwArgs := BuildForwardArgs(fType, p, h, hp, bindAddr)
+	args = append(args, fwArgs...)
+
+	target := s.Alias
+	if !useAlias || target == "" {
+		if s.Port != 0 && s.Port != 22 {
+			args = append(args, "-p", fmt.Sprintf("%d", s.Port))
+		}
+		for _, kf := range s.IdentityFiles {
+			if kf != "" {
+				args = append(args, "-i", quoteIfNeeded(kf))
+			}
+		}
+		if s.ProxyJump != "" {
+			args = append(args, "-J", quoteIfNeeded(s.ProxyJump))
+		}
+
+		target = s.Host
+		if s.User != "" {
+			target = fmt.Sprintf("%s@%s", s.User, s.Host)
+		}
+		if target == "" {
+			target = s.Alias
+		}
+	}
+
+	args = append(args, target)
+	return strings.Join(args, " ")
+}
+
 // addOption adds an SSH option in the format "-o Key=Value" if value is not empty
 func addOption(parts *[]string, key, value string) {
 	if value != "" {

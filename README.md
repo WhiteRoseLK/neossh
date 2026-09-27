@@ -59,6 +59,7 @@ If you are coming from **lazyssh**, here is a concrete summary of everything **n
 | **SCP Command Generator** | Generates and copies ready-to-use `scp` upload and download command templates with port, identity key, and proxy jump arguments directly to your clipboard. | <kbd>o</kbd> / `--scp <alias>` |
 | **Secure Password Auth (sshpass)** | Automated password delivery for legacy hosts using `sshpass` backed by native OS keyring (macOS Keychain, Linux Secret Service, Windows Credential Manager) or AES-256-GCM vault—never written in plain text to `~/.ssh/config` or `metadata.json`. | `--password` / `-P` / UI form |
 | **SSHFS Remote Mounts** | Mount remote server filesystems locally with full SSH configuration (ports, identity files, jump proxies, auto-reconnect, and read-only flags) and copy ready-to-run mount/unmount commands. | <kbd>M</kbd> / `--sshfs <alias>` |
+| **SSH Port Forwarding & Tunnel Assistant** | Interactive port forwarding assistant for Local (`-L`), Remote (`-R`), and Dynamic SOCKS5 (`-D`) proxy tunnels. Supports saving favorite tunnel profiles per host in `~/.neossh/settings.json`, real-time command preview, background daemon launch, and one-touch command copy to clipboard. | <kbd>f</kbd> / `--tunnel <alias>` |
 | **Paste SSH Command** | Parses any SSH command from system clipboard (flags, identity keys, ports, jump hosts) into an add-server modal with intelligent alias deduction and deduplication. | <kbd>v</kbd> |
 | **Duplicate / Clone Server** | Instantly clones any existing server configuration into the Add form with automatic alias deduplication (`srv_1`, `srv_2`), eliminating manual re-typing. | <kbd>y</kbd> / <kbd>C</kbd> |
 | **Zero-Friction Migration** | Automatically detects and migrates your favorites, tags, and connection history from `~/.lazyssh` to `~/.neossh`. | *Automatic* |
@@ -306,6 +307,7 @@ neossh [filter] [flags]
 | `--show-hidden` | `-H` | Display hidden servers in UI list | `false` |
 | `--scp <alias>` | | Generate SCP upload/download command templates for a server alias and copy to clipboard | `""` |
 | `--sshfs <alias>` | | Generate SSHFS remote mount and unmount command templates for a server alias and copy to clipboard | `""` |
+| `--tunnel <alias>`, `--forward <alias>` | | Generate SSH port forwarding / tunnel command templates for a server alias and copy to clipboard | `""` |
 | `--pre-connect <cmd>` | | Run local hook command before SSH connect (supports `%h`, `%p`, `%r`, `%n`) | `""` |
 | `--default-key <path>` | | Get or set default SSH identity key prefilled for new server entries | `""` |
 | `--password <pwd>` | `-P` | Password for automated `sshpass` authentication | `""` |
@@ -335,6 +337,9 @@ neossh --scp web-prod
 
 # Generate SSHFS remote filesystem mount commands:
 neossh --sshfs web-prod
+
+# Generate SSH port forwarding command templates and view saved tunnel profiles:
+neossh --tunnel web-prod
 
 # Launch TUI with French localization:
 neossh --lang fr
@@ -391,7 +396,7 @@ neossh --sshconfig ~/.ssh/config_work -r
 
 `neossh` provides built-in shell autocompletion for **Bash**, **Zsh**, **Fish**, and **PowerShell**, complete with dynamic server alias suggestions directly parsed from your SSH configuration.
 
-- **Dynamic Server Alias Completion**: Press <kbd>Tab</kbd> after `neossh`, `neossh -c`, `neossh --scp`, or `neossh --sshfs` to view matching host aliases alongside their `user@host:port` descriptions.
+- **Dynamic Server Alias Completion**: Press <kbd>Tab</kbd> after `neossh`, `neossh -c`, `neossh --scp`, `neossh --sshfs`, or `neossh --tunnel` to view matching host aliases alongside their `user@host:port` descriptions.
 - **Flag & Option Completion**: Flags like `--theme` suggest available themes (`dark`, `light`, `system`), `--lang` suggests supported locales (`en`, `fr`, `zh-CN`), and `--sshconfig` / `--known-hosts` trigger path completions.
 
 #### Installation Instructions
@@ -481,7 +486,7 @@ neossh completion powershell > "$HOME\Documents\PowerShell\neossh.ps1"
 | `v` | Paste SSH command from clipboard *(disabled in read-only mode)* |
 | `y` | Duplicate / clone selected server entry *(disabled in read-only mode)* |
 | `K` | Terminate active SSH session (when on Active Sessions) / Push SSH key via `ssh-copy-id` (when on Servers) *(disabled in read-only mode)* |
-| `f` | Configure SSH port forwarding (Local / Remote / Dynamic) |
+| `f` | Open interactive SSH port forwarding and tunnel assistant (Local `-L`, Remote `-R`, Dynamic SOCKS5 `-D`, saved favorite profiles, live command preview, and clipboard copy) |
 | `s` | Toggle sort mode (alias, last SSH, reverse) |
 | `g` | Ping selected server |
 | `G` | Ping all servers (parallel check with latency badges) |

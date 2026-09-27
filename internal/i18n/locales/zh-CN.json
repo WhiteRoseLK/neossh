@@ -68,5 +68,13 @@
   "scp.use_alias": "使用 SSH 别名",
   "scp.btn_copy": "复制命令",
   "scp.btn_cancel": "取消",
-  "scp.preview": "生成的命令:"
+  "scp.preview": "生成的命令:",
+
+  "forward.title": " SSH 端口转发与隧道助手: %s ",
+  "forward.preview": "生成的命令:",
+  "forward.btn_start": "启动",
+  "forward.btn_copy": "复制命令",
+  "forward.btn_save": "保存配置",
+  "forward.btn_delete": "删除配置",
+  "forward.btn_cancel": "取消"
 }
