@@ -26,6 +26,8 @@ type ServerRepository interface {
 	SetHidden(alias string, hidden bool) error
 	RecordSSH(alias string) error
 	GetConfigFile() string
+	GetConfigFiles() ([]string, error)
+	GetMetadataFile() string
 	DiscoverKnownHosts(knownHostsPath string) ([]domain.Server, domain.ImportResult, error)
 	ImportKnownHosts(knownHostsPath string) (domain.ImportResult, error)
 	GetTheme() (string, error)

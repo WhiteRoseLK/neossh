@@ -64,6 +64,10 @@ func (m *mockServerRepository) SetPinned(string, bool) error { return nil }
 func (m *mockServerRepository) SetHidden(string, bool) error { return nil }
 
 func (m *mockServerRepository) GetConfigFile() string { return "~/.ssh/config" }
+func (m *mockServerRepository) GetConfigFiles() ([]string, error) {
+	return []string{"~/.ssh/config"}, nil
+}
+func (m *mockServerRepository) GetMetadataFile() string { return "" }
 
 func (m *mockServerRepository) GetTheme() (string, error) { return "dark", nil }
 

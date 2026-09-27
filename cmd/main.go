@@ -384,6 +384,9 @@ func newRootCmd() *cobra.Command {
 	})
 
 	cmd.AddCommand(newCompletionCmd())
+	cmd.AddCommand(newExportCmd())
+	cmd.AddCommand(newImportCmd())
+	cmd.AddCommand(newVerifyCmd())
 
 	cmd.SilenceUsage = true
 	return cmd
@@ -829,6 +832,227 @@ func handleDefaultKeyFlag(
 
 	fmt.Printf("Successfully set default SSH identity key: %s\n", trimmed)
 	return true, nil
+}
+
+func newExportCmd() *cobra.Command {
+	var (
+		outputPath   string
+		sanitize     bool
+		customConfig string
+	)
+
+	cmd := &cobra.Command{
+		Use:     "export [flags]",
+		Aliases: []string{"backup"},
+		Short:   "Export SSH configuration, includes, and neossh metadata into a portable bundle",
+		Long: `Export gathers your main SSH config (~/.ssh/config), all referenced Include config files,
+and neossh metadata (metadata.json and settings.json) into a compressed tar.gz bundle.
+
+The --sanitize flag strips private key paths (IdentityFile) and sensitive comments so the bundle
+can be safely shared across a team.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("failed to determine user home directory: %w", err)
+			}
+
+			resolvedConfig, cleanup, err := resolveSSHConfigFile(home, customConfig)
+			if err != nil {
+				return err
+			}
+			defer cleanup()
+
+			metaDataFile, err := ensureMetadataFile(home)
+			if err != nil {
+				return fmt.Errorf("failed to resolve metadata file: %w", err)
+			}
+
+			silentLog := zap.NewNop().Sugar()
+			repo := ssh_config_file.NewRepository(silentLog, resolvedConfig, metaDataFile)
+			bundleSvc := services.NewBundleService(repo, silentLog, version)
+
+			neosshDir := filepath.Dir(metaDataFile)
+			summary, err := bundleSvc.Export(domain.ExportOptions{
+				SSHConfigFile: resolvedConfig,
+				NeosshDir:     neosshDir,
+				OutputPath:    outputPath,
+				Sanitize:      sanitize,
+			})
+			if err != nil {
+				return fmt.Errorf("export failed: %w", err)
+			}
+
+			cmd.Println("✓ Successfully exported configuration bundle:")
+			cmd.Printf("  • Bundle file: %s\n", summary.OutputPath)
+			cmd.Printf("  • Total servers: %d\n", summary.Manifest.ServerCount)
+			cmd.Printf("  • Archived files: %d\n", len(summary.Manifest.Files))
+			if summary.Manifest.Sanitized {
+				cmd.Println("  • Sanitation: YES (private key paths and sensitive comments stripped)")
+			} else {
+				cmd.Println("  • Sanitation: NO (contains original key paths)")
+			}
+
+			if len(summary.Manifest.Files) > 0 {
+				cmd.Println("\nArchived files:")
+				for _, f := range summary.Manifest.Files {
+					cmd.Printf("  - [%s] %s (%d bytes)\n", f.Category, f.ArchivePath, f.SizeBytes)
+				}
+			}
+
+			if len(summary.Warnings) > 0 {
+				cmd.Println("\nWarnings:")
+				for _, w := range summary.Warnings {
+					cmd.Printf("  ⚠ %s\n", w)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(
+		&outputPath, "output", "o", "", "output bundle file path (default: neossh-bundle-<timestamp>.tar.gz)",
+	)
+	cmd.Flags().BoolVarP(
+		&sanitize, "sanitize", "s", false, "strip private key paths and sensitive comments for safe team sharing",
+	)
+	cmd.Flags().StringVar(&customConfig, "sshconfig", "", "path to ssh config file (default: ~/.ssh/config)")
+
+	return cmd
+}
+
+func newImportCmd() *cobra.Command {
+	var (
+		dryRun       bool
+		noBackup     bool
+		targetSSHDir string
+		targetNeossh string
+	)
+
+	cmd := &cobra.Command{
+		Use:     "import <bundle.tar.gz> [flags]",
+		Aliases: []string{"restore"},
+		Short:   "Restore SSH configuration, includes, and metadata from a bundle",
+		Long: `Import restores SSH configuration files, included configs, and neossh metadata from a bundle.
+
+Existing files are automatically backed up with a .bak.<timestamp> suffix before being overwritten,
+unless --no-backup is specified. Use --dry-run to preview what will be restored without writing to disk.`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			bundlePath := args[0]
+			silentLog := zap.NewNop().Sugar()
+			bundleSvc := services.NewBundleService(nil, silentLog, version)
+
+			summary, err := bundleSvc.Import(domain.ImportOptions{
+				BundlePath:      bundlePath,
+				TargetSSHDir:    targetSSHDir,
+				TargetNeosshDir: targetNeossh,
+				DryRun:          dryRun,
+				CreateBackup:    !noBackup,
+			})
+			if err != nil {
+				return fmt.Errorf("import failed: %w", err)
+			}
+
+			if dryRun {
+				cmd.Println("✓ Dry-run verification completed (no files were modified):")
+			} else {
+				cmd.Println("✓ Configuration bundle successfully restored:")
+			}
+
+			cmd.Printf("  • Source bundle: %s\n", summary.OutputPath)
+			cmd.Printf("  • Bundle version: %s (neossh %s)\n", summary.Manifest.Version, summary.Manifest.NeosshVersion)
+			cmd.Printf("  • Created at: %s\n", summary.Manifest.CreatedAt.Local().Format("2006-01-02 15:04:05"))
+			cmd.Printf("  • Sanitized: %v\n", summary.Manifest.Sanitized)
+			cmd.Printf("  • Detected servers: %d\n", summary.Manifest.ServerCount)
+
+			if len(summary.RestoredFiles) > 0 {
+				if dryRun {
+					cmd.Println("\nFiles that would be restored:")
+				} else {
+					cmd.Println("\nRestored files:")
+				}
+				for _, f := range summary.RestoredFiles {
+					cmd.Printf("  - %s\n", f)
+				}
+			}
+
+			if len(summary.BackupFiles) > 0 {
+				if dryRun {
+					cmd.Println("\nFiles that would be backed up before overwrite:")
+				} else {
+					cmd.Println("\nCreated backups of existing files:")
+				}
+				for _, f := range summary.BackupFiles {
+					cmd.Printf("  - %s\n", f)
+				}
+			}
+
+			if len(summary.Warnings) > 0 {
+				cmd.Println("\nWarnings:")
+				for _, w := range summary.Warnings {
+					cmd.Printf("  ⚠ %s\n", w)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "preview restore actions without modifying any files on disk")
+	cmd.Flags().BoolVar(&noBackup, "no-backup", false, "skip creating .bak backups of existing files before overwrite")
+	cmd.Flags().StringVar(&targetSSHDir, "sshdir", "", "target SSH directory (default: ~/.ssh)")
+	cmd.Flags().StringVar(&targetNeossh, "neosshdir", "", "target neossh directory (default: ~/.neossh)")
+
+	return cmd
+}
+
+func newVerifyCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "verify <bundle.tar.gz>",
+		Short: "Verify and inspect contents of a neossh bundle without extracting",
+		Long:  `Verify checks the integrity, manifest, and SHA-256 checksums of a configuration bundle.`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			bundlePath := args[0]
+			silentLog := zap.NewNop().Sugar()
+			bundleSvc := services.NewBundleService(nil, silentLog, version)
+
+			summary, err := bundleSvc.Verify(bundlePath)
+			if err != nil {
+				return fmt.Errorf("verification failed: %w", err)
+			}
+
+			cmd.Println("✓ Bundle is valid:")
+			cmd.Printf("  • File: %s\n", summary.OutputPath)
+			cmd.Printf("  • Schema version: %s\n", summary.Manifest.Version)
+			cmd.Printf("  • Created by neossh: %s\n", summary.Manifest.NeosshVersion)
+			cmd.Printf("  • Created at: %s\n", summary.Manifest.CreatedAt.Local().Format("2006-01-02 15:04:05"))
+			cmd.Printf("  • Source host: %s\n", summary.Manifest.Hostname)
+			cmd.Printf("  • Sanitized: %v\n", summary.Manifest.Sanitized)
+			cmd.Printf("  • Server count: %d\n", summary.Manifest.ServerCount)
+
+			if len(summary.Manifest.Files) > 0 {
+				cmd.Println("\nArchive contents:")
+				for _, f := range summary.Manifest.Files {
+					chk := f.SHA256Checksum
+					if len(chk) > 12 {
+						chk = chk[:12] + "..."
+					}
+					cmd.Printf("  - [%s] %s (%d bytes, sha256: %s)\n", f.Category, f.ArchivePath, f.SizeBytes, chk)
+				}
+			}
+
+			if len(summary.Warnings) > 0 {
+				cmd.Println("\nWarnings:")
+				for _, w := range summary.Warnings {
+					cmd.Printf("  ⚠ %s\n", w)
+				}
+			}
+
+			return nil
+		},
+	}
 }
 
 func main() {
