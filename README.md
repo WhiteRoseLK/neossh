@@ -60,7 +60,7 @@ If you are coming from **lazyssh**, here is a concrete summary of everything **n
 | **Secure Password Auth (sshpass)** | Automated password delivery for legacy hosts using `sshpass` backed by native OS keyring (macOS Keychain, Linux Secret Service, Windows Credential Manager) or AES-256-GCM vault—never written in plain text to `~/.ssh/config` or `metadata.json`. | `--password` / `-P` / UI form |
 | **SSHFS Remote Mounts** | Mount remote server filesystems locally with full SSH configuration (ports, identity files, jump proxies, auto-reconnect, and read-only flags) and copy ready-to-run mount/unmount commands. | <kbd>M</kbd> / `--sshfs <alias>` |
 | **SSH Port Forwarding & Tunnel Assistant** | Interactive port forwarding assistant for Local (`-L`), Remote (`-R`), and Dynamic SOCKS5 (`-D`) proxy tunnels. Supports saving favorite tunnel profiles per host in `~/.neossh/settings.json`, real-time command preview, background daemon launch, and one-touch command copy to clipboard. | <kbd>f</kbd> / `--tunnel <alias>` |
-| **Built-in Dual-Pane SFTP File Manager** | Interactive full-screen dual-pane file manager (WinSCP / FileZilla style) inside the TUI. Browse local and remote directories over the SSH connection via the SFTP subsystem with directory navigation, sorting (name, size, modification date), non-blocking streaming transfers (<kbd>u</kbd> for upload, <kbd>d</kbd> for download), transfer speed and progress indicators, and overwrite confirmation dialogs. | <kbd>F</kbd> / <kbd>Ctrl+F</kbd> |
+| **Dual-Pane & External SFTP File Manager** | Interactive full-screen dual-pane file manager (WinSCP / FileZilla style) inside the TUI with streaming transfers and progress indicators, or quick-launch external file transfer tools (`sftp`, `yazi`, `ranger`, `filezilla`, `cyberduck`, `nautilus`, `dolphin`, or custom templates with `sftp://` and `fish://` URLs). Configurable in `~/.neossh/settings.json` with fallback to standard OpenSSH `sftp`. | <kbd>F</kbd> / <kbd>Ctrl+F</kbd> / `--sftp <alias>` |
 | **SSH Certificate Status & Expiry Detection** | Full support for OpenSSH certificates via `CertificateFile` or implicit `<IdentityFile>-cert.pub`. Server details display live validity status (`✓ Valid`, `⚠ Expiring soon`, `✗ Expired`), remaining time, principals, key ID, and validity window. Proportional "expiring soon" warning scaled dynamically to the certificate's lifetime (e.g. 6m for 1h certs, 24h for 30d certs). SSH failure dialog automatically detects and highlights expired certificates as the probable root cause. | *Automatic* / UI form |
 | **On-Demand SSH Certificate Renewal** | Automatically renews short-lived SSH certificates before connecting via a configurable per-host command (`step ssh login`, `vault write`, `tsh login`, or custom script). If the certificate is already valid, connection starts immediately without prompts; if missing, expired, or expiring soon, the command runs once, verifies the certificate is now valid on disk, and proceeds. Configurable via UI form and SSH config comments (`# certificate-command:`). | UI form / `# certificate-command:` |
 | **Configuration Backup & Export Bundle** | Backup, export, and migrate your SSH configuration files (main `~/.ssh/config` and all referenced `Include` files), metadata, and settings into a single compressed `.tar.gz` bundle. Features optional `--sanitize` to strip private key paths (`IdentityFile`) and sensitive comments for safe team sharing, integrity verification (`neossh verify`), and safe restore (`neossh import`) with automatic `.bak` backups. | `neossh export` / `neossh import` |
@@ -170,9 +170,13 @@ If you are coming from **lazyssh**, here is a concrete summary of everything **n
 - 📜 **SSH Certificate Status & Expiry Detection**: first-class support for OpenSSH short-lived certificates via `CertificateFile` or implicit `<IdentityFile>-cert.pub`. Server details display live validity status badges (`✓ Valid`, `⚠ Expiring soon`, `✗ Expired`), remaining time, principals, key ID, and validity window. Expiration warnings scale proportionally to certificate lifetime, and SSH connection failures explicitly flag expired certificates.
 - 🔄 **On-Demand SSH Certificate Renewal**: eliminate annoying repeated MFA/OIDC logins with smart on-demand certificate renewal. Specify a per-host certificate renewal command (e.g. `step ssh login %u@%h`, `vault write ...`, `tsh login`). Neossh checks certificate validity before connecting: if the certificate is already valid, connection starts immediately with zero overhead; if missing or expired, the command runs once, verifies on disk that a valid certificate was produced, and seamlessly establishes the connection. Stored in SSH config comments (`# certificate-command:`, `# cert-command:`, `# cert-renew:`).
 
-### Remote Filesystem Mounts (SSHFS) & SFTP File Manager
+### Remote Filesystem Mounts (SSHFS) & SFTP File Transfer
 - 📂 **SSHFS Remote Mounts** (<kbd>M</kbd>): mount remote server filesystems locally with full SSH configuration (ports, identity files, jump proxies, auto-reconnect, and read-only flags) and copy ready-to-run mount/unmount commands.
-- 📁 **Dual-Pane SFTP File Manager** (<kbd>F</kbd> or <kbd>Ctrl+F</kbd>): interactive WinSCP / FileZilla style file manager with local (left) and remote (right) panels, directory navigation, sorting by name/size/date (<kbd>s</kbd>), seamless uploads (<kbd>u</kbd>) and downloads (<kbd>d</kbd>), real-time streaming transfer progress, and overwrite confirmation dialogs.
+- 📁 **Dual-Pane SFTP File Manager** (<kbd>Ctrl+F</kbd> or <kbd>F</kbd>): interactive WinSCP / FileZilla style file manager inside the TUI with local (left) and remote (right) panels, directory navigation, sorting by name/size/date (<kbd>s</kbd>), seamless uploads (<kbd>u</kbd>) and downloads (<kbd>d</kbd>), real-time streaming transfer progress, and overwrite confirmation dialogs.
+- ⚡ **Quick Launch SFTP & External File Managers** (`neossh --sftp <alias> [--file-manager <tool>]` or <kbd>F</kbd>): launch an interactive file transfer session directly for any selected server.
+  - **Configurable Tool in `~/.neossh/settings.json`**: set `"file_manager": "yazi"`, `"ranger"`, `"filezilla"`, `"cyberduck"`, `"nautilus"`, `"dolphin"`, or custom command templates (supporting `%a`, `%h`, `%u`, `%p`, `%url`, `%fish_url`, `%c`).
+  - **Graceful Fallback**: defaults to standard OpenSSH `sftp` or `"file_manager": "internal"` for the built-in dual-pane manager.
+  - **Modern Protocol URLs**: automatically generates standard `sftp://[user@]host[:port]/` and KDE Dolphin `fish://[user@]host[:port]/` URLs for seamless GUI/CLI integration.
 
 ### Configuration Backup, Export & Migration Bundle
 - 📦 **Export Configuration Bundle** (`neossh export` or `neossh backup`): archives your main `~/.ssh/config`, all recursively resolved `Include` files, and `~/.neossh/` metadata (`metadata.json`, `settings.json`) into a compressed `.tar.gz` bundle.
@@ -318,6 +322,8 @@ neossh [filter] [flags]
 | `--theme <mode>` | `-t` | Set color theme: `dark`, `light`, or `system` | `""` *(stored preference or dark)* |
 | `--lang <code>` | `-l` | Set interface language: `en`, `fr`, `zh-CN` (or via `NEOSSH_LANG`) | `""` *(English default)* |
 | `--show-hidden` | `-H` | Display hidden servers in UI list | `false` |
+| `--sftp <alias>` | | Quick-launch interactive SFTP session or configured file manager for server alias | `""` |
+| `--file-manager <tool>` | | Specify file manager tool or command template for SFTP (`sftp`, `yazi`, `ranger`, `filezilla`, `cyberduck`, `nautilus`, `dolphin`, or template) | `""` *(uses settings or sftp)* |
 | `--scp <alias>` | | Generate SCP upload/download command templates for a server alias and copy to clipboard | `""` |
 | `--sshfs <alias>` | | Generate SSHFS remote mount and unmount command templates for a server alias and copy to clipboard | `""` |
 | `--tunnel <alias>`, `--forward <alias>` | | Generate SSH port forwarding / tunnel command templates for a server alias and copy to clipboard | `""` |
@@ -335,6 +341,12 @@ neossh [filter] [flags]
 ```bash
 # Launch normal interactive TUI:
 neossh
+
+# Quick-launch SFTP session directly for a server:
+neossh --sftp web-prod
+
+# Quick-launch external file manager (e.g. Yazi, Ranger, or FileZilla) for a server:
+neossh --sftp web-prod --file-manager yazi
 
 # Launch with continuous background ping watch every 30 seconds:
 neossh --ping-watch --ping-interval 30
@@ -500,7 +512,8 @@ neossh completion powershell > "$HOME\Documents\PowerShell\neossh.ps1"
 | `y` | Duplicate / clone selected server entry *(disabled in read-only mode)* |
 | `K` | Terminate active SSH session (when on Active Sessions) / Push SSH key via `ssh-copy-id` (when on Servers) *(disabled in read-only mode)* |
 | `f` | Open interactive SSH port forwarding and tunnel assistant (Local `-L`, Remote `-R`, Dynamic SOCKS5 `-D`, saved favorite profiles, live command preview, and clipboard copy) |
-| `F` / `Ctrl+F` | Open built-in dual-pane SFTP file manager (WinSCP / FileZilla style: local & remote browsing, file upload/download with real-time transfer progress and overwrite confirmation) |
+| `F` | Launch SFTP session or configured file manager (`sftp`, `yazi`, `ranger`, `filezilla`, `dolphin`, or internal dual-pane) |
+| `Ctrl+F` | Open built-in dual-pane SFTP file manager directly (WinSCP / FileZilla style: local & remote browsing, streaming file upload/download, progress bars, overwrite confirmation) |
 | `s` | Toggle sort mode (alias, last SSH, reverse) |
 | `g` | Ping selected server |
 | `G` | Ping all servers (parallel check with latency badges) |

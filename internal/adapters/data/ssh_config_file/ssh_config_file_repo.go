@@ -349,6 +349,25 @@ func (r *Repository) SaveDefaultIdentityKey(key string) error {
 	return r.metadataManager.SaveSettings(settings)
 }
 
+// GetFileManager returns the configured file manager command or tool name from settings.
+func (r *Repository) GetFileManager() (string, error) {
+	settings, err := r.metadataManager.GetSettings()
+	if err != nil {
+		return "", err
+	}
+	return settings.FileManager, nil
+}
+
+// SaveFileManager saves the file manager command or tool name to settings.
+func (r *Repository) SaveFileManager(tool string) error {
+	settings, err := r.metadataManager.GetSettings()
+	if err != nil {
+		settings = Settings{}
+	}
+	settings.FileManager = tool
+	return r.metadataManager.SaveSettings(settings)
+}
+
 // LoadSettings loads application settings from the metadata file at the given path.
 // This is a standalone function for use during app initialization before the repository is created.
 func LoadSettings(metaDataPath string) (Settings, error) {

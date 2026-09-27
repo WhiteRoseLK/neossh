@@ -51,6 +51,8 @@ var (
 	gitSSHFlag        string
 	langFlag          string
 	scpFlag           string
+	sftpFlag          string
+	fileManagerFlag   string
 	sshfsFlag         string
 	tunnelFlag        string
 	preConnectFlag    string
@@ -214,6 +216,10 @@ func newRootCmd() *cobra.Command {
 				return handleSCPFlag(serverService, scpFlag)
 			}
 
+			if sftpFlag != "" {
+				return handleSFTPFlag(serverService, sftpFlag, fileManagerFlag)
+			}
+
 			if sshfsFlag != "" {
 				return handleSSHFSFlag(serverService, sshfsFlag)
 			}
@@ -303,6 +309,13 @@ func newRootCmd() *cobra.Command {
 		&scpFlag, "scp", "", "generate SCP command templates for server alias (e.g. --scp myserver)",
 	)
 	cmd.PersistentFlags().StringVar(
+		&sftpFlag, "sftp", "", "launch SFTP session or external file manager for server alias (e.g. --sftp myserver)",
+	)
+	cmd.PersistentFlags().StringVar(
+		&fileManagerFlag, "file-manager", "",
+		"file manager tool or command template for SFTP (e.g. sftp, yazi, ranger, filezilla, cyberduck)",
+	)
+	cmd.PersistentFlags().StringVar(
 		&sshfsFlag, "sshfs", "", "generate SSHFS remote mount command for server alias (e.g. --sshfs myserver)",
 	)
 	cmd.PersistentFlags().StringVar(
@@ -366,6 +379,17 @@ func newRootCmd() *cobra.Command {
 		cmd *cobra.Command, _ []string, toComplete string,
 	) ([]string, cobra.ShellCompDirective) {
 		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
+	})
+	_ = cmd.RegisterFlagCompletionFunc("sftp", func(
+		cmd *cobra.Command, _ []string, toComplete string,
+	) ([]string, cobra.ShellCompDirective) {
+		return getSSHHostAliasesForCompletion(cmd, toComplete), cobra.ShellCompDirectiveNoFileComp
+	})
+	_ = cmd.RegisterFlagCompletionFunc("file-manager", func(
+		_ *cobra.Command, _ []string, _ string,
+	) ([]string, cobra.ShellCompDirective) {
+		tools := []string{"sftp", "yazi", "ranger", "filezilla", "cyberduck", "nautilus", "dolphin"}
+		return tools, cobra.ShellCompDirectiveNoFileComp
 	})
 	_ = cmd.RegisterFlagCompletionFunc("sshfs", func(
 		cmd *cobra.Command, _ []string, toComplete string,
@@ -716,6 +740,31 @@ func handleSCPFlag(serverService ports.ServerService, alias string) error {
 		fmt.Println("\n✓ Copied default upload command to system clipboard.")
 	}
 	return nil
+}
+
+func handleSFTPFlag(serverService ports.ServerService, alias string, tool string) error {
+	servers, err := serverService.ListServers("")
+	if err != nil {
+		return fmt.Errorf("failed to list servers: %w", err)
+	}
+
+	var found *domain.Server
+	for i := range servers {
+		if strings.EqualFold(servers[i].Alias, alias) {
+			found = &servers[i]
+			break
+		}
+	}
+
+	if found == nil {
+		return fmt.Errorf("server alias %q not found", alias)
+	}
+
+	if found.IsWildcardServer() {
+		return fmt.Errorf("cannot launch SFTP session for wildcard pattern block %q", found.Alias)
+	}
+
+	return serverService.LaunchFileManager(found.Alias, tool)
 }
 
 func handleSSHFSFlag(serverService ports.ServerService, alias string) error {

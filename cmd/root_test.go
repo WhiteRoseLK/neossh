@@ -242,9 +242,12 @@ func TestRootCmd_FilterParsing(t *testing.T) {
 
 type mockDirectConnectService struct {
 	ports.ServerService
-	servers    []domain.Server
-	sshCalled  string
-	defaultKey string
+	servers       []domain.Server
+	sshCalled     string
+	defaultKey    string
+	sftpCalled    string
+	launchFMAlias string
+	launchFMTool  string
 }
 
 func (m *mockDirectConnectService) ListServers(query string) ([]domain.Server, error) {
@@ -268,6 +271,17 @@ func (m *mockDirectConnectService) GetDefaultIdentityKey() (string, error) {
 
 func (m *mockDirectConnectService) SaveDefaultIdentityKey(key string) error {
 	m.defaultKey = key
+	return nil
+}
+
+func (m *mockDirectConnectService) SFTP(alias string) error {
+	m.sftpCalled = alias
+	return nil
+}
+
+func (m *mockDirectConnectService) LaunchFileManager(alias string, customTool string) error {
+	m.launchFMAlias = alias
+	m.launchFMTool = customTool
 	return nil
 }
 
@@ -657,6 +671,61 @@ func TestHandleSSHFSFlag(t *testing.T) {
 	}
 }
 
+func TestRootCmd_SFTPFlag(t *testing.T) {
+	sftpFlag = ""
+	fileManagerFlag = ""
+	cmd := newRootCmd()
+	err := cmd.ParseFlags([]string{"--sftp", "myserver", "--file-manager", "yazi"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if sftpFlag != "myserver" {
+		t.Errorf("expected sftpFlag=%q, got %q", "myserver", sftpFlag)
+	}
+	if fileManagerFlag != "yazi" {
+		t.Errorf("expected fileManagerFlag=%q, got %q", "yazi", fileManagerFlag)
+	}
+}
+
+func TestHandleSFTPFlag(t *testing.T) {
+	svc := &mockDirectConnectService{
+		servers: []domain.Server{
+			{
+				Alias: "web-prod",
+				Host:  "10.0.0.1",
+				User:  "ubuntu",
+				Port:  2202,
+			},
+			{
+				Alias:      "*.corp",
+				Host:       "*.corp",
+				IsWildcard: true,
+			},
+		},
+	}
+
+	// Test found with custom tool
+	err := handleSFTPFlag(svc, "web-prod", "ranger")
+	if err != nil {
+		t.Errorf("expected no error for valid server alias, got %v", err)
+	}
+	if svc.launchFMAlias != "web-prod" || svc.launchFMTool != "ranger" {
+		t.Errorf("expected launchFM web-prod/ranger, got %s/%s", svc.launchFMAlias, svc.launchFMTool)
+	}
+
+	// Test wildcard server
+	err = handleSFTPFlag(svc, "*.corp", "")
+	if err == nil || !strings.Contains(err.Error(), "wildcard") {
+		t.Errorf("expected wildcard error, got %v", err)
+	}
+
+	// Test not found
+	err = handleSFTPFlag(svc, "nonexistent", "")
+	if err == nil || !strings.Contains(err.Error(), "not found") {
+		t.Errorf("expected not found error, got %v", err)
+	}
+}
+
 func TestRootCmd_TunnelFlags(t *testing.T) {
 	t.Run("tunnel flag", func(t *testing.T) {
 		tunnelFlag = ""
@@ -1040,6 +1109,28 @@ func TestRootCmd_FlagCompletions(t *testing.T) {
 	}
 	if sshfsCompFn == nil {
 		t.Error("expected non-nil completion function for sshfs")
+	}
+
+	// sftp flag completion
+	sftpCompFn, found := cmd.GetFlagCompletionFunc("sftp")
+	if !found {
+		t.Fatal("expected flag completion for 'sftp' to be registered")
+	}
+	if sftpCompFn == nil {
+		t.Error("expected non-nil completion function for sftp")
+	}
+
+	// file-manager flag completion
+	fmCompFn, found := cmd.GetFlagCompletionFunc("file-manager")
+	if !found {
+		t.Fatal("expected flag completion for 'file-manager' to be registered")
+	}
+	fmComps, fmDir := fmCompFn(cmd, nil, "")
+	if fmDir != cobra.ShellCompDirectiveNoFileComp {
+		t.Errorf("expected NoFileComp for file-manager, got %v", fmDir)
+	}
+	if len(fmComps) == 0 || !slices.Contains(fmComps, "yazi") {
+		t.Errorf("expected yazi in file-manager completions, got %v", fmComps)
 	}
 }
 

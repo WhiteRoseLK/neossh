@@ -30,6 +30,7 @@ type Settings struct {
 	Theme              string `json:"theme,omitempty"`
 	PreConnectCommand  string `json:"pre_connect_command,omitempty"`
 	DefaultIdentityKey string `json:"default_identity_key,omitempty"`
+	FileManager        string `json:"file_manager,omitempty"`
 }
 
 type ServerMetadata struct {

@@ -131,6 +131,14 @@ func (m *mockReadOnlyService) ReloadServers() error {
 	return nil
 }
 
+func (m *mockReadOnlyService) SFTP(alias string) error {
+	return nil
+}
+
+func (m *mockReadOnlyService) LaunchFileManager(alias string, customTool string) error {
+	return nil
+}
+
 func (m *mockReadOnlyService) UpdateServerPing(string, string, time.Duration) {}
 
 func TestTUI_ReadOnlyState(t *testing.T) {
