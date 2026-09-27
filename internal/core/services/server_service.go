@@ -677,6 +677,126 @@ func (s *serverService) runPreConnectHook(alias string) error {
 	return nil
 }
 
+func (s *serverService) ensureValidCertificate(alias string) error {
+	servers, err := s.ListServers("")
+	if err != nil {
+		s.logger.Warnw("failed to list servers for certificate renewal check", "error", err)
+	}
+
+	var target *domain.Server
+	for i := range servers {
+		if strings.EqualFold(servers[i].Alias, alias) {
+			target = &servers[i]
+			break
+		}
+	}
+
+	if target == nil {
+		return nil
+	}
+
+	certCmd := strings.TrimSpace(target.CertificateCommand)
+	if certCmd == "" {
+		return nil
+	}
+
+	cert := domain.InspectServerCertificate(*target)
+
+	// If certificate is valid and not expiring soon, no renewal needed!
+	if cert != nil && cert.FileExists && cert.Status == domain.CertStatusValid {
+		s.logger.Infow("SSH certificate is valid, skipping renewal", "alias", alias, "remaining", cert.TimeRemaining)
+		return nil
+	}
+
+	// Certificate is missing, expired, or expiring soon. Execute renewal command.
+	s.logger.Infow("SSH certificate needs acquisition/renewal, executing certificate command",
+		"alias", alias, "status", func() string {
+			if cert == nil {
+				return "missing"
+			}
+			return string(cert.Status)
+		}())
+
+	srv := *target
+	if srv.Port == 0 {
+		srv.Port = 22
+	}
+	cmdStr := interpolateHookCommand(certCmd, srv)
+
+	hookCmdFactory := s.newHookCommand
+	if hookCmdFactory == nil {
+		hookCmdFactory = func(c string) *exec.Cmd {
+			if runtime.GOOS == "windows" {
+				//nolint:gosec // G204: intentional user certificate command hook
+				return exec.Command("cmd.exe", "/c", c)
+			}
+			//nolint:gosec // G204: intentional user certificate command hook
+			return exec.Command("sh", "-c", c)
+		}
+	}
+
+	cmd := hookCmdFactory(cmdStr)
+	if cmd == nil {
+		return fmt.Errorf("certificate command factory returned nil")
+	}
+
+	cmd.Env = append(cmd.Environ(),
+		"NEOSSH_ALIAS="+srv.Alias,
+		"NEOSSH_HOST="+srv.Host,
+		"NEOSSH_USER="+srv.User,
+		"NEOSSH_PORT="+strconv.Itoa(srv.Port),
+		"NEOSSH_CONFIG="+s.serverRepository.GetConfigFile(),
+	)
+
+	stderrBuf := newLimitedBuffer(2048)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
+
+	if err := cmd.Run(); err != nil {
+		s.logger.Errorw("certificate renewal command failed", "alias", alias, "command", cmdStr, "error", err)
+		msg := strings.TrimSpace(stderrBuf.String())
+		if msg != "" {
+			return fmt.Errorf("certificate command failed (%s): %s", cmdStr, msg)
+		}
+		return fmt.Errorf("certificate command failed (%s): %w", cmdStr, err)
+	}
+
+	// Verify that a valid certificate is now present on disk
+	newCert := domain.InspectServerCertificate(*target)
+	if newCert == nil || !newCert.FileExists {
+		certPath, _ := domain.ResolveServerCertificatePath(*target)
+		if certPath == "" {
+			switch {
+			case target.CertificateFile != "":
+				certPath = target.CertificateFile
+			case len(target.IdentityFiles) > 0:
+				certPath = target.IdentityFiles[0] + "-cert.pub"
+			default:
+				certPath = "certificate file (unspecified CertificateFile or IdentityFile-cert.pub)"
+			}
+		}
+		return fmt.Errorf("certificate command succeeded but certificate %s was not found on disk", certPath)
+	}
+
+	if newCert.Status == domain.CertStatusExpired {
+		return fmt.Errorf("certificate command succeeded but certificate at %q is expired", newCert.Path)
+	}
+	if newCert.Status == domain.CertStatusNotYetValid {
+		return fmt.Errorf("certificate command succeeded but certificate at %q is not yet valid", newCert.Path)
+	}
+	if newCert.Status != domain.CertStatusValid && newCert.Status != domain.CertStatusExpiringSoon {
+		errMsg := newCert.KeyID
+		if errMsg == "" {
+			errMsg = "not a valid SSH certificate"
+		}
+		return fmt.Errorf("certificate command succeeded but certificate at %q is invalid: %s", newCert.Path, errMsg)
+	}
+
+	s.logger.Infow("SSH certificate successfully verified after renewal", "alias", alias, "status", newCert.Status)
+	return nil
+}
+
 func (s *serverService) getPasswordForServer(alias string) string {
 	if pwd := os.Getenv("NEOSSH_PASSWORD"); pwd != "" {
 		return pwd
@@ -735,6 +855,10 @@ func (s *serverService) SSH(alias string) error {
 	s.logger.Infow("ssh start", "alias", alias)
 	if strings.ContainsAny(alias, "*?") {
 		return fmt.Errorf("cannot initiate direct SSH connection to a wildcard pattern block")
+	}
+
+	if err := s.ensureValidCertificate(alias); err != nil {
+		return err
 	}
 
 	if err := s.runPreConnectHook(alias); err != nil {
@@ -803,6 +927,10 @@ func (s *serverService) SSHWithArgs(alias string, extraArgs []string) error {
 	s.logger.Infow("ssh start (with args)", "alias", alias, "args", extraArgs)
 	if strings.ContainsAny(alias, "*?") {
 		return fmt.Errorf("cannot initiate direct SSH connection to a wildcard pattern block")
+	}
+
+	if err := s.ensureValidCertificate(alias); err != nil {
+		return err
 	}
 
 	if err := s.runPreConnectHook(alias); err != nil {

@@ -72,6 +72,7 @@ type Server struct {
 	HostbasedAcceptedAlgorithms string
 	IdentitiesOnly              string
 	CertificateFile             string
+	CertificateCommand          string // hook or script executed on-demand to acquire/renew SSH certificate
 	// SSH Agent
 	AddKeysToAgent string
 	IdentityAgent  string

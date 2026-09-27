@@ -17,6 +17,7 @@ package services
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -307,6 +308,24 @@ func TestHelperProcess(t *testing.T) {
 				_, _ = os.Stderr.WriteString("hook error: connection refused\n")
 				os.Exit(1)
 			case "hook-success":
+				os.Exit(0)
+			case "cert-fail":
+				_, _ = os.Stderr.WriteString("step-ca: token expired or unauthorized\n")
+				os.Exit(1)
+			case "copy-file":
+				if len(args) > i+3 {
+					src := args[i+2]
+					dst := args[i+3]
+					content, readErr := os.ReadFile(src)
+					if readErr != nil {
+						_, _ = fmt.Fprintf(os.Stderr, "failed to read source: %v\n", readErr)
+						os.Exit(1)
+					}
+					if writeErr := os.WriteFile(dst, content, 0o600); writeErr != nil {
+						_, _ = fmt.Fprintf(os.Stderr, "failed to write dest: %v\n", writeErr)
+						os.Exit(1)
+					}
+				}
 				os.Exit(0)
 			default:
 				_, _ = os.Stderr.WriteString("unknown scenario\n")

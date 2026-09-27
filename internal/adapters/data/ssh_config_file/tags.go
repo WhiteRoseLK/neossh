@@ -288,3 +288,32 @@ func extractHostPreConnectCommand(host *ssh_config.Host) string {
 	}
 	return ""
 }
+
+var certificateCommandCommentRegex = regexp.MustCompile(`(?i)(?:^|[\s#;|,(\[])(?:certificate-command|cert-command|cert-renew)\s*[:=]\s*([^#;\r\n]+)`)
+
+func extractCertificateCommandFromComment(comment string) string {
+	match := certificateCommandCommentRegex.FindStringSubmatch(comment)
+	if len(match) >= 2 {
+		return strings.Trim(match[1], " \t\r\n)]}\"'")
+	}
+	return ""
+}
+
+func extractHostCertificateCommand(host *ssh_config.Host) string {
+	if cmd := extractCertificateCommandFromComment(host.EOLComment); cmd != "" {
+		return cmd
+	}
+	for _, node := range host.Nodes {
+		switch n := node.(type) {
+		case *ssh_config.Empty:
+			if cmd := extractCertificateCommandFromComment(n.Comment); cmd != "" {
+				return cmd
+			}
+		case *ssh_config.KV:
+			if cmd := extractCertificateCommandFromComment(n.Comment); cmd != "" {
+				return cmd
+			}
+		}
+	}
+	return ""
+}

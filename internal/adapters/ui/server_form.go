@@ -1253,6 +1253,7 @@ func (sf *ServerForm) getDefaultValues() ServerFormData {
 			PubkeyAuthentication: server.PubkeyAuthentication,
 			IdentitiesOnly:       server.IdentitiesOnly,
 			CertificateFile:      server.CertificateFile,
+			CertificateCommand:   server.CertificateCommand,
 			// SSH Agent
 			AddKeysToAgent: server.AddKeysToAgent,
 			IdentityAgent:  server.IdentityAgent,
@@ -1341,6 +1342,7 @@ func (sf *ServerForm) getDefaultValues() ServerFormData {
 		PubkeyAuthentication:         "",
 		IdentitiesOnly:               "",
 		CertificateFile:              "",
+		CertificateCommand:           "",
 		AddKeysToAgent:               "",
 		IdentityAgent:                "",
 		PasswordAuthentication:       "",
@@ -1695,6 +1697,9 @@ func (sf *ServerForm) createAuthenticationForm() {
 	// CertificateFile field
 	sf.addInputFieldWithHelp(form, "CertificateFile:", "CertificateFile", defaultValues.CertificateFile, 40, GetFieldPlaceholder("CertificateFile"))
 
+	// CertificateCommand field
+	sf.addInputFieldWithHelp(form, "CertificateCommand:", "CertificateCommand", defaultValues.CertificateCommand, 40, GetFieldPlaceholder("CertificateCommand"))
+
 	// SSH Agent settings
 	form.AddTextView("\n[yellow]▶ SSH Agent[-]", "", 0, 1, true, false)
 
@@ -1888,6 +1893,7 @@ type ServerFormData struct {
 	PubkeyAuthentication string
 	IdentitiesOnly       string
 	CertificateFile      string
+	CertificateCommand   string
 	// SSH Agent
 	AddKeysToAgent string
 	IdentityAgent  string
@@ -2017,6 +2023,7 @@ func (sf *ServerForm) getFormData() ServerFormData {
 		PubkeyAuthentication: getDropdownValue("PubkeyAuthentication:"),
 		IdentitiesOnly:       getDropdownValue("IdentitiesOnly:"),
 		CertificateFile:      getFieldText("CertificateFile:"),
+		CertificateCommand:   getFieldText("CertificateCommand:"),
 		// SSH Agent
 		AddKeysToAgent: getDropdownValue("AddKeysToAgent:"),
 		IdentityAgent:  getFieldText("IdentityAgent:"),
@@ -2437,6 +2444,7 @@ func (sf *ServerForm) dataToServer(data ServerFormData) domain.Server {
 		PubkeyAuthentication: data.PubkeyAuthentication,
 		IdentitiesOnly:       data.IdentitiesOnly,
 		CertificateFile:      domain.ToTildePath(data.CertificateFile),
+		CertificateCommand:   data.CertificateCommand,
 		// SSH Agent
 		AddKeysToAgent: data.AddKeysToAgent,
 		IdentityAgent:  data.IdentityAgent,

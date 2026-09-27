@@ -256,6 +256,14 @@ var fieldHelpData = map[string]FieldHelp{
 		Default:     "",
 		Category:    "Authentication",
 	},
+	"CertificateCommand": {
+		Field:       "CertificateCommand",
+		Description: "Command executed on-demand before connection to obtain or renew the SSH certificate when missing or expired.",
+		Syntax:      "<command> [args]",
+		Examples:    []string{"step ssh login %u@%h", "vault write -field=signed_key ssh/sign/user", "tsh login"},
+		Default:     "",
+		Category:    "Authentication",
+	},
 	"PasswordAuthentication": {
 		Field:       "PasswordAuthentication",
 		Description: "Enable or disable password authentication.",
