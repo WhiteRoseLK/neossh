@@ -204,46 +204,54 @@ func (sd *ServerDetails) renderCertBasic(cert *domain.SSHCertificate) string {
 	return badge
 }
 
-func (sd *ServerDetails) renderCertDetailsSection(cert *domain.SSHCertificate) string {
-	if cert == nil {
+func (sd *ServerDetails) renderCertDetailsSection(cert *domain.SSHCertificate, certCmd string) string {
+	if cert == nil && certCmd == "" {
 		return ""
 	}
 
 	var sb strings.Builder
 	sb.WriteString("\n[::b]SSH Certificate Details[-]\n")
-	fmt.Fprintf(&sb, "  Path: [white]%s[-]\n", cert.Path)
-	if cert.IsImplicit {
-		sb.WriteString("  Source: [cyan]Implicit (<IdentityFile>-cert.pub)[-]\n")
+	if cert != nil {
+		fmt.Fprintf(&sb, "  Path: [white]%s[-]\n", cert.Path)
+		if cert.IsImplicit {
+			sb.WriteString("  Source: [cyan]Implicit (<IdentityFile>-cert.pub)[-]\n")
+		} else {
+			sb.WriteString("  Source: [cyan]Explicit CertificateFile[-]\n")
+		}
+
+		badge, desc := domain.FormatCertStatusBadge(cert)
+		if desc != "" {
+			fmt.Fprintf(&sb, "  Status: %s (%s)\n", badge, desc)
+		} else {
+			fmt.Fprintf(&sb, "  Status: %s\n", badge)
+		}
+
+		if cert.FileExists {
+			if !cert.ValidBefore.IsZero() {
+				fmt.Fprintf(&sb, "  Valid To: [white]%s[-]\n", cert.ValidBefore.Format("2006-01-02 15:04:05"))
+			}
+			if !cert.ValidAfter.IsZero() {
+				fmt.Fprintf(&sb, "  Valid From: [white]%s[-]\n", cert.ValidAfter.Format("2006-01-02 15:04:05"))
+			}
+			if cert.Lifetime > 0 && cert.Lifetime < time.Duration(1<<60) {
+				fmt.Fprintf(&sb, "  Lifetime: [white]%s[-]\n", domain.FormatDuration(cert.Lifetime))
+			}
+			if cert.KeyID != "" {
+				fmt.Fprintf(&sb, "  Key ID: [white]%s[-]\n", cert.KeyID)
+			}
+			if len(cert.Principals) > 0 {
+				fmt.Fprintf(&sb, "  Principals: [white]%s[-]\n", strings.Join(cert.Principals, ", "))
+			}
+			if cert.Serial > 0 {
+				fmt.Fprintf(&sb, "  Serial: [white]%d[-]\n", cert.Serial)
+			}
+		}
 	} else {
-		sb.WriteString("  Source: [cyan]Explicit CertificateFile[-]\n")
+		sb.WriteString("  Status: [yellow]⚠ Missing certificate on disk[-]\n")
 	}
 
-	badge, desc := domain.FormatCertStatusBadge(cert)
-	if desc != "" {
-		fmt.Fprintf(&sb, "  Status: %s (%s)\n", badge, desc)
-	} else {
-		fmt.Fprintf(&sb, "  Status: %s\n", badge)
-	}
-
-	if cert.FileExists {
-		if !cert.ValidBefore.IsZero() {
-			fmt.Fprintf(&sb, "  Valid To: [white]%s[-]\n", cert.ValidBefore.Format("2006-01-02 15:04:05"))
-		}
-		if !cert.ValidAfter.IsZero() {
-			fmt.Fprintf(&sb, "  Valid From: [white]%s[-]\n", cert.ValidAfter.Format("2006-01-02 15:04:05"))
-		}
-		if cert.Lifetime > 0 && cert.Lifetime < time.Duration(1<<60) {
-			fmt.Fprintf(&sb, "  Lifetime: [white]%s[-]\n", domain.FormatDuration(cert.Lifetime))
-		}
-		if cert.KeyID != "" {
-			fmt.Fprintf(&sb, "  Key ID: [white]%s[-]\n", cert.KeyID)
-		}
-		if len(cert.Principals) > 0 {
-			fmt.Fprintf(&sb, "  Principals: [white]%s[-]\n", strings.Join(cert.Principals, ", "))
-		}
-		if cert.Serial > 0 {
-			fmt.Fprintf(&sb, "  Serial: [white]%d[-]\n", cert.Serial)
-		}
+	if certCmd != "" {
+		fmt.Fprintf(&sb, "  Renew Command: [white]%s[-]\n", certCmd)
 	}
 
 	return sb.String()
@@ -350,7 +358,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 		}
 	}
 
-	text += sd.renderCertDetailsSection(cert)
+	text += sd.renderCertDetailsSection(cert, server.CertificateCommand)
 
 	// Advanced settings section (only show non-empty fields)
 	// Organized by logical grouping for better readability
@@ -401,6 +409,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 			fields: []fieldEntry{
 				{"PubkeyAuthentication", server.PubkeyAuthentication},
 				{"CertificateFile", server.CertificateFile},
+				{"CertificateCommand", server.CertificateCommand},
 				{"PubkeyAcceptedAlgorithms", server.PubkeyAcceptedAlgorithms},
 				{"HostbasedAcceptedAlgorithms", server.HostbasedAcceptedAlgorithms},
 				{"Password (sshpass)", maskedPassword(server.Password)},
