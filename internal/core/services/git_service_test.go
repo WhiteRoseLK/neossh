@@ -53,6 +53,8 @@ func (m *mockServerRepo) GetPreConnectCommand() (string, error)  { return "", ni
 func (m *mockServerRepo) SavePreConnectCommand(cmd string) error { return nil }
 func (m *mockServerRepo) GetDefaultIdentityKey() (string, error) { return "", nil }
 func (m *mockServerRepo) SaveDefaultIdentityKey(_ string) error  { return nil }
+func (m *mockServerRepo) GetFileManager() (string, error)        { return "", nil }
+func (m *mockServerRepo) SaveFileManager(_ string) error         { return nil }
 
 func TestGitService_IsGitRepository(t *testing.T) {
 	logger := zap.NewNop().Sugar()

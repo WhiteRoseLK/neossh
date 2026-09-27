@@ -151,6 +151,10 @@ func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 	}
 
 	if event.Key() == tcell.KeyCtrlF {
+		if server, ok := t.serverList.GetSelectedServer(); ok && !server.IsWildcardServer() {
+			t.handleInternalSFTPFileManager(server)
+			return nil
+		}
 		t.handleSFTPFileManager()
 		return nil
 	}
@@ -467,6 +471,23 @@ func (t *tui) handleSFTPFileManager() {
 		return
 	}
 
+	var tool string
+	if t.settings != nil {
+		tool, _ = t.settings.LoadFileManager()
+	}
+	if tool == "" {
+		tool = "sftp"
+	}
+
+	if strings.EqualFold(tool, "internal") {
+		t.handleInternalSFTPFileManager(server)
+		return
+	}
+
+	t.launchExternalFileManager(server.Alias, tool)
+}
+
+func (t *tui) handleInternalSFTPFileManager(server domain.Server) {
 	t.showStatusTemp("Connecting SFTP to " + server.Alias + "…")
 
 	go func() {
@@ -496,6 +517,44 @@ func (t *tui) handleSFTPFileManager() {
 			t.app.SetFocus(mgr.leftTable)
 		})
 	}()
+}
+
+func (t *tui) launchExternalFileManager(alias string, tool string) {
+	if isGUIFileManager(tool) {
+		t.showStatusTemp(fmt.Sprintf("Launching %s for %s…", tool, alias))
+		go func() {
+			if err := t.serverService.LaunchFileManager(alias, tool); err != nil {
+				t.app.QueueUpdateDraw(func() {
+					t.showErrorModal("File Manager Error", err.Error())
+				})
+			}
+		}()
+		return
+	}
+
+	var launchErr error
+	t.app.Suspend(func() {
+		if err := t.serverService.LaunchFileManager(alias, tool); err != nil {
+			launchErr = err
+			t.logger.Errorw("file manager launch error", "alias", alias, "tool", tool, "error", err)
+		}
+	})
+	services.SetTerminalTitle("neossh")
+	t.app.Sync()
+	t.refreshServerList()
+	if launchErr != nil {
+		t.showErrorModal(fmt.Sprintf("Failed to launch file manager (%s)", tool), launchErr.Error())
+	}
+}
+
+func isGUIFileManager(tool string) bool {
+	low := strings.ToLower(strings.TrimSpace(tool))
+	switch low {
+	case "filezilla", "cyberduck", "nautilus", "dolphin":
+		return true
+	default:
+		return false
+	}
 }
 
 func (t *tui) handlePasteCommand() {

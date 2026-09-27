@@ -27,13 +27,18 @@ import (
 
 type mockServerService struct {
 	ports.ServerService
-	servers           []domain.Server
-	sshCalled         bool
-	sshAlias          string
-	sshWithArgsCalled bool
-	sshWithArgsAlias  string
-	sshWithArgsArgs   []string
-	listServersCalled bool
+	servers            []domain.Server
+	sshCalled          bool
+	sshAlias           string
+	sshWithArgsCalled  bool
+	sshWithArgsAlias   string
+	sshWithArgsArgs    []string
+	listServersCalled  bool
+	sftpCalled         bool
+	sftpAlias          string
+	launchFMToolCalled bool
+	launchFMAlias      string
+	launchFMTool       string
 }
 
 func (m *mockServerService) SSH(alias string) error {
@@ -99,6 +104,19 @@ func (m *mockServerService) GetDefaultIdentityKey() (string, error) {
 }
 
 func (m *mockServerService) SaveDefaultIdentityKey(string) error {
+	return nil
+}
+
+func (m *mockServerService) SFTP(alias string) error {
+	m.sftpCalled = true
+	m.sftpAlias = alias
+	return nil
+}
+
+func (m *mockServerService) LaunchFileManager(alias string, customTool string) error {
+	m.launchFMToolCalled = true
+	m.launchFMAlias = alias
+	m.launchFMTool = customTool
 	return nil
 }
 
@@ -301,5 +319,42 @@ func TestNewTUI_InitialFilterConfig(t *testing.T) {
 	// Verify server list has been populated
 	if app.serverList.GetItemCount() == 0 {
 		t.Errorf("expected server list to have at least 1 server item")
+	}
+}
+
+func TestIsGUIFileManager(t *testing.T) {
+	guiTools := []string{"filezilla", "FileZilla", "cyberduck", "nautilus", "dolphin"}
+	for _, tool := range guiTools {
+		if !isGUIFileManager(tool) {
+			t.Errorf("expected %s to be recognized as GUI file manager", tool)
+		}
+	}
+
+	cliTools := []string{"sftp", "yazi", "ranger", "internal", "custom-sh"}
+	for _, tool := range cliTools {
+		if isGUIFileManager(tool) {
+			t.Errorf("expected %s to NOT be recognized as GUI file manager", tool)
+		}
+	}
+}
+
+func TestHandleSFTPFileManager_ExternalLaunch(t *testing.T) {
+	appInstance, svc, _ := setupTestTUI(false)
+	defer appInstance.app.Stop()
+
+	// Select server
+	appInstance.serverList.SetCurrentItem(0)
+
+	// Test external launch (default tool is "sftp")
+	appInstance.handleSFTPFileManager()
+
+	if !svc.launchFMToolCalled {
+		t.Fatalf("expected LaunchFileManager to be called")
+	}
+	if svc.launchFMAlias != "srv1" {
+		t.Errorf("expected alias 'srv1', got %q", svc.launchFMAlias)
+	}
+	if svc.launchFMTool != "sftp" {
+		t.Errorf("expected tool 'sftp', got %q", svc.launchFMTool)
 	}
 }

@@ -29,6 +29,8 @@ type ServerService interface {
 	SetHidden(alias string, hidden bool) error
 	SSH(alias string) error
 	SSHWithArgs(alias string, extraArgs []string) error
+	SFTP(alias string) error
+	LaunchFileManager(alias string, customTool string) error
 	CopySSHKey(alias string) error
 	StartForward(alias string, extraArgs []string) (int, error)
 	StopForwarding(alias string) error

@@ -36,4 +36,6 @@ type ServerRepository interface {
 	SavePreConnectCommand(cmd string) error
 	GetDefaultIdentityKey() (string, error)
 	SaveDefaultIdentityKey(key string) error
+	GetFileManager() (string, error)
+	SaveFileManager(tool string) error
 }

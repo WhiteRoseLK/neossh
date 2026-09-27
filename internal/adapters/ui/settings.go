@@ -57,6 +57,7 @@ type uiSettings struct {
 	AutoPingEnabled         bool                       `json:"auto_ping_enabled,omitempty"`
 	AutoPingIntervalSeconds int                        `json:"auto_ping_interval_seconds,omitempty"`
 	TunnelProfiles          map[string][]TunnelProfile `json:"tunnel_profiles,omitempty"`
+	FileManager             string                     `json:"file_manager,omitempty"`
 }
 
 func newSettingsManager(logger *zap.SugaredLogger) *settingsManager {
@@ -374,4 +375,43 @@ func (m *settingsManager) saveLocked(settings uiSettings) error {
 	}
 
 	return os.WriteFile(m.filePath, data, 0o600)
+}
+
+// LoadFileManager returns the configured file manager tool from settings (default: "sftp").
+func (m *settingsManager) LoadFileManager() (string, error) {
+	if m == nil {
+		return "sftp", errors.New("nil settings manager")
+	}
+
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return "sftp", err
+	}
+
+	trimmed := strings.TrimSpace(settings.FileManager)
+	if trimmed == "" {
+		return "sftp", nil
+	}
+	return trimmed, nil
+}
+
+// SaveFileManager saves the configured file manager tool to settings.
+func (m *settingsManager) SaveFileManager(fm string) error {
+	if m == nil {
+		return errors.New("nil settings manager")
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return err
+	}
+
+	settings.FileManager = strings.TrimSpace(fm)
+	return m.saveLocked(settings)
 }

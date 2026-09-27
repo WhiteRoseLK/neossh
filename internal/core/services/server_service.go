@@ -57,6 +57,8 @@ type serverService struct {
 
 	newSSHCommand         func(alias string) *exec.Cmd
 	newSSHCommandWithArgs func(alias string, extraArgs []string) *exec.Cmd
+	newSFTPCommand        func(alias string, args []string) *exec.Cmd
+	newFileManagerCommand func(tool string, args []string) *exec.Cmd
 	newHookCommand        func(cmdStr string) *exec.Cmd
 	newSSHPassCommand     func(sshpassPath, pwd string, sshCmd *exec.Cmd) *exec.Cmd
 	lookPath              func(file string) (string, error)
@@ -113,6 +115,14 @@ func NewServerService(logger *zap.SugaredLogger, sr ports.ServerRepository, opts
 			args = append(args, "-F", sr.GetConfigFile(), alias)
 			//nolint:gosec // G204: intentional SSH command
 			return exec.Command("ssh", args...)
+		},
+		newSFTPCommand: func(alias string, extraArgs []string) *exec.Cmd {
+			args := make([]string, 0, 2+len(extraArgs)+1)
+			args = append(args, "-F", sr.GetConfigFile())
+			args = append(args, extraArgs...)
+			args = append(args, alias)
+			//nolint:gosec // G204: intentional SFTP command
+			return exec.Command("sftp", args...)
 		},
 		newHookCommand: func(cmdStr string) *exec.Cmd {
 			if runtime.GOOS == "windows" {
@@ -992,6 +1002,228 @@ func (s *serverService) SSHWithArgs(alias string, extraArgs []string) error {
 	}
 	s.logger.Infow("ssh end (with args)", "alias", alias)
 	return nil
+}
+
+// SFTP starts an interactive SFTP session for the given alias.
+func (s *serverService) SFTP(alias string) error {
+	return s.LaunchFileManager(alias, "")
+}
+
+// LaunchFileManager launches either the standard OpenSSH SFTP client or a configured
+// external file manager (yazi, ranger, filezilla, cyberduck, etc.) for the given server alias.
+func (s *serverService) LaunchFileManager(alias string, customTool string) error {
+	s.logger.Infow("file manager launch start", "alias", alias, "customTool", customTool)
+	if strings.ContainsAny(alias, "*?") {
+		return fmt.Errorf("cannot initiate file transfer to a wildcard pattern block")
+	}
+
+	servers, err := s.ListServers("")
+	if err != nil {
+		return fmt.Errorf("failed to load servers: %w", err)
+	}
+
+	var target *domain.Server
+	for i := range servers {
+		if strings.EqualFold(servers[i].Alias, alias) || hasAlias(servers[i].Aliases, alias) {
+			target = &servers[i]
+			break
+		}
+	}
+
+	if target == nil {
+		return fmt.Errorf("server with alias %q not found", alias)
+	}
+
+	if target.IsWildcard || target.IsWildcardServer() {
+		return fmt.Errorf("cannot initiate file transfer to a wildcard pattern block")
+	}
+
+	if err := s.ensureValidCertificate(alias); err != nil {
+		return err
+	}
+
+	if err := s.runPreConnectHook(alias); err != nil {
+		return err
+	}
+
+	tool := strings.TrimSpace(customTool)
+	if tool == "" {
+		if configuredTool, err := s.serverRepository.GetFileManager(); err == nil && strings.TrimSpace(configuredTool) != "" {
+			tool = strings.TrimSpace(configuredTool)
+		}
+	}
+	if tool == "" {
+		tool = "sftp"
+	}
+
+	host := target.Host
+	user := target.User
+	port := target.Port
+	if port <= 0 {
+		port = 22
+	}
+
+	sftpURL := buildSFTPURL(user, host, port)
+	fishURL := buildFishURL(user, host, port)
+	configFile := s.serverRepository.GetConfigFile()
+
+	cmd, isGUI := s.buildFileManagerCmd(tool, *target, sftpURL, fishURL, configFile)
+
+	if strings.EqualFold(tool, "sftp") || tool == "" {
+		cmd, err = s.wrapWithSSHPass(alias, cmd)
+		if err != nil {
+			s.logger.Errorw("sshpass wrap failed for sftp", "alias", alias, "error", err)
+			return err
+		}
+	}
+
+	if isGUI {
+		if err := cmd.Start(); err != nil {
+			s.logger.Errorw("failed to start GUI file manager", "tool", tool, "alias", alias, "error", err)
+			return fmt.Errorf("failed to launch %s: %w", tool, err)
+		}
+		s.logger.Infow("GUI file manager launched", "tool", tool, "alias", alias)
+		_ = s.serverRepository.RecordSSH(alias)
+		return nil
+	}
+
+	title := fmt.Sprintf("%s (SFTP)", s.formatTerminalTitle(alias))
+	SetTerminalTitle(title)
+	defer RestoreTerminalTitle()
+
+	stderrBuf := newLimitedBuffer(2048)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
+
+	if err := cmd.Run(); err != nil {
+		if isRemoteDisconnectError(err, stderrBuf.String()) {
+			s.logger.Infow("sftp session ended by remote", "alias", alias)
+		} else {
+			s.logger.Errorw("file manager command failed", "alias", alias, "tool", tool, "error", err)
+			msg := strings.TrimSpace(stderrBuf.String())
+			if msg != "" {
+				return fmt.Errorf("%s", msg)
+			}
+			return err
+		}
+	}
+
+	if err := s.serverRepository.RecordSSH(alias); err != nil {
+		s.logger.Errorw("failed to record ssh metadata after sftp", "alias", alias, "error", err)
+	}
+
+	s.logger.Infow("file manager session ended", "alias", alias, "tool", tool)
+	return nil
+}
+
+func buildSFTPURL(user, host string, port int) string {
+	if port == 22 || port <= 0 {
+		if user != "" {
+			return fmt.Sprintf("sftp://%s@%s/", user, host)
+		}
+		return fmt.Sprintf("sftp://%s/", host)
+	}
+	if user != "" {
+		return fmt.Sprintf("sftp://%s@%s:%d/", user, host, port)
+	}
+	return fmt.Sprintf("sftp://%s:%d/", host, port)
+}
+
+func buildFishURL(user, host string, port int) string {
+	if port == 22 || port <= 0 {
+		if user != "" {
+			return fmt.Sprintf("fish://%s@%s/", user, host)
+		}
+		return fmt.Sprintf("fish://%s/", host)
+	}
+	if user != "" {
+		return fmt.Sprintf("fish://%s@%s:%d/", user, host, port)
+	}
+	return fmt.Sprintf("fish://%s:%d/", host, port)
+}
+
+func (s *serverService) buildFileManagerCmd(
+	tool string, target domain.Server, sftpURL, fishURL, configFile string,
+) (*exec.Cmd, bool) {
+	alias := target.Alias
+	normalized := strings.ToLower(strings.TrimSpace(tool))
+
+	if s.newFileManagerCommand != nil {
+		cmd := s.newFileManagerCommand(tool, []string{alias, sftpURL, fishURL})
+		return cmd, isGUIFileManager(tool)
+	}
+
+	switch normalized {
+	case "sftp", "":
+		if s.newSFTPCommand != nil {
+			cmd := s.newSFTPCommand(alias, nil)
+			return cmd, false
+		}
+		//nolint:gosec // G204: intentional SFTP command
+		return exec.Command("sftp", "-F", configFile, alias), false
+
+	case "yazi":
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("yazi", sftpURL), false
+
+	case "ranger":
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("ranger", sftpURL), false
+
+	case "filezilla":
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("filezilla", sftpURL), true
+
+	case "cyberduck":
+		if runtime.GOOS == "darwin" {
+			//nolint:gosec // G204: intentional open command on macOS
+			return exec.Command("open", "-a", "Cyberduck", sftpURL), true
+		}
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("cyberduck", sftpURL), true
+
+	case "nautilus":
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("nautilus", sftpURL), true
+
+	case "dolphin":
+		//nolint:gosec // G204: intentional user file manager
+		return exec.Command("dolphin", fishURL), true
+
+	default:
+		cmdStr := tool
+		cmdStr = strings.ReplaceAll(cmdStr, "%url", sftpURL)
+		cmdStr = strings.ReplaceAll(cmdStr, "%sftp_url", sftpURL)
+		cmdStr = strings.ReplaceAll(cmdStr, "%sftp", sftpURL)
+		cmdStr = strings.ReplaceAll(cmdStr, "%fish_url", fishURL)
+		cmdStr = strings.ReplaceAll(cmdStr, "%fish", fishURL)
+		cmdStr = strings.ReplaceAll(cmdStr, "%a", alias)
+		cmdStr = strings.ReplaceAll(cmdStr, "%n", alias)
+		cmdStr = strings.ReplaceAll(cmdStr, "%h", target.Host)
+		cmdStr = strings.ReplaceAll(cmdStr, "%u", target.User)
+		cmdStr = strings.ReplaceAll(cmdStr, "%r", target.User)
+		cmdStr = strings.ReplaceAll(cmdStr, "%p", strconv.Itoa(target.Port))
+		cmdStr = strings.ReplaceAll(cmdStr, "%c", configFile)
+
+		isGUI := isGUIFileManager(tool)
+		if runtime.GOOS == "windows" {
+			//nolint:gosec // G204: intentional custom file manager command
+			return exec.Command("cmd.exe", "/c", cmdStr), isGUI
+		}
+		//nolint:gosec // G204: intentional custom file manager command
+		return exec.Command("sh", "-c", cmdStr), isGUI
+	}
+}
+
+func isGUIFileManager(tool string) bool {
+	lower := strings.ToLower(strings.TrimSpace(tool))
+	switch lower {
+	case "filezilla", "cyberduck", "nautilus", "dolphin", "thunar", "nemo", "pcmanfm", "open", "xdg-open":
+		return true
+	default:
+		return false
+	}
 }
 
 func isRemoteDisconnectError(err error, stderr string) bool {
