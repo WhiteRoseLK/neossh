@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/) and is automated with [Release Please](https://github.com/googleapis/release-please).
 
+## [2.1.0](https://github.com/WhiteRoseLK/neossh/compare/v2.0.0...v2.1.0) (2026-09-27)
+
+
+### Features
+
+* **cli:** backup and export SSH configuration and metadata bundle ([#116](https://github.com/WhiteRoseLK/neossh/issues/116)) ([7bc5ce4](https://github.com/WhiteRoseLK/neossh/commit/7bc5ce42b3b36a3e607476fbc10dfef08a2693ba))
+* **cli:** provide shell autocompletion for bash, zsh, and fish with host alias completion ([#105](https://github.com/WhiteRoseLK/neossh/issues/105)) ([d0cebf0](https://github.com/WhiteRoseLK/neossh/commit/d0cebf005f4f89044c51a40ad518b657c5347854))
+* **cli:** quick launch SFTP session or external file transfer for selected server ([#117](https://github.com/WhiteRoseLK/neossh/issues/117)) ([0755734](https://github.com/WhiteRoseLK/neossh/commit/0755734a990cbe10c097d679843954745671a539))
+* **core:** SSH port forwarding and tunnel assistant (local, remote, and SOCKS5) ([#112](https://github.com/WhiteRoseLK/neossh/issues/112)) ([6bfa79e](https://github.com/WhiteRoseLK/neossh/commit/6bfa79eed0766e2bfcbb32cc6d0424739bb50cb7))
+* renew SSH certificates on demand via an external command ([#115](https://github.com/WhiteRoseLK/neossh/issues/115)) ([e355ff8](https://github.com/WhiteRoseLK/neossh/commit/e355ff8586ab04d75508b6e8d431b6831cdeccc0))
+* show SSH certificate status ([#114](https://github.com/WhiteRoseLK/neossh/issues/114)) ([e5c60b9](https://github.com/WhiteRoseLK/neossh/commit/e5c60b940a25ee22ea9e7591b916b425df5a0cc7))
+* **ui:** built-in dual-pane SFTP file manager (WinSCP / FileZilla style) ([#113](https://github.com/WhiteRoseLK/neossh/issues/113)) ([c32c37b](https://github.com/WhiteRoseLK/neossh/commit/c32c37bccb8bd817edb35069720ade800141f1a2))
+* **ui:** display SSH key type badges and FIDO2/security-key indicator in server details ([#107](https://github.com/WhiteRoseLK/neossh/issues/107)) ([25cd763](https://github.com/WhiteRoseLK/neossh/commit/25cd763fca82bb588bc88a20597f34029888e8ea))
+* **ui:** periodic background ping watch mode with configurable interval ([#106](https://github.com/WhiteRoseLK/neossh/issues/106)) ([1c4ff24](https://github.com/WhiteRoseLK/neossh/commit/1c4ff24cbb732e74f6aafcf35363c4a8847c368e))
+* **ui:** support advanced search filters in search bar ([#104](https://github.com/WhiteRoseLK/neossh/issues/104)) ([7e6b667](https://github.com/WhiteRoseLK/neossh/commit/7e6b667121aa0c8174709d77fb3239b413381e3a))
+
+
+### Bug Fixes
+
+* **release:** standardize release workflow on Google Release Please ([#91](https://github.com/WhiteRoseLK/neossh/issues/91)) ([bac6974](https://github.com/WhiteRoseLK/neossh/commit/bac69748681d0f1fba3f7e4e66c923b7fa867406))
+* **ui:** preserve case-sensitive shortcut keys in normalizeGlobalHotkey ([#108](https://github.com/WhiteRoseLK/neossh/issues/108)) ([a8699f9](https://github.com/WhiteRoseLK/neossh/commit/a8699f96f0f2a71b62a5d9514c33c9abad33344e))
+
+
+### Continuous Integration & Tooling
+
+* **build:** sync needs-triage label with issue priority ([#103](https://github.com/WhiteRoseLK/neossh/issues/103)) ([9b02df8](https://github.com/WhiteRoseLK/neossh/commit/9b02df8869b83e6ff4d4d6dac53e74067b95e87c))
+* **release:** add distribution targets check and dry-run on release PRs ([#93](https://github.com/WhiteRoseLK/neossh/issues/93)) ([51cd6ba](https://github.com/WhiteRoseLK/neossh/commit/51cd6baae662c08d422318dd72dd51bf98301c5a))
+
 ## [2.0.0](https://github.com/WhiteRoseLK/neossh/compare/v1.0.0...v2.0.0) (2026-09-22)
 
 
