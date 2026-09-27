@@ -7,8 +7,11 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/v/release/WhiteRoseLK/neossh?style=flat-square)](https://github.com/WhiteRoseLK/neossh/releases)
+[![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-blue?style=flat-square)](https://whiteroselk.github.io/neossh/)
 [![License](https://img.shields.io/github/license/WhiteRoseLK/neossh?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/WhiteRoseLK/neossh?style=flat-square)](go.mod)
+[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?style=flat-square)](CODE_OF_CONDUCT.md)
+[![Security Policy](https://img.shields.io/badge/security-policy-brightgreen?style=flat-square)](SECURITY.md)
 [![Fork of](https://img.shields.io/badge/fork%20of-Adembc%2Flazyssh-blue?style=flat-square)](https://github.com/Adembc/lazyssh)
 
 </div>
@@ -19,6 +22,9 @@
 > **neossh is a direct fork of [lazyssh](https://github.com/Adembc/lazyssh)**, originally created by [Adembc](https://github.com/Adembc).
 > All core credit for the foundational idea, design, and original implementation belongs to **Adembc**.
 > This project exists solely because the original repository became unmaintained while having numerous valuable open PRs and issues. Rather than letting that work gather dust, **neossh** continues development, integrates community contributions, and provides ongoing maintenance.
+
+> [!TIP]
+> 📚 **Complete Documentation Site**: Looking for in-depth topic guides, advanced architecture, and complete references? Check out the [**neossh Documentation Portal**](https://whiteroselk.github.io/neossh/).
 
 ## 💡 About neossh
 
@@ -629,9 +635,15 @@ For legacy servers or restricted environments that do not support SSH public key
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing & Community Standards
 
-Contributions are welcome! Feel free to open an [Issue](https://github.com/WhiteRoseLK/neossh/issues) or submit a Pull Request.
+Contributions are welcome! We strive to foster an open, welcoming, and inclusive community.
+
+- **[Contributing Guide](CONTRIBUTING.md)**: Development setup, testing, conventions, and pull request guidelines.
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our pledge and standards based on Contributor Covenant v2.1.
+- **[Security Policy](SECURITY.md)**: Responsible vulnerability disclosure and security architecture.
+
+Feel free to open an [Issue](https://github.com/WhiteRoseLK/neossh/issues) or submit a Pull Request.
 
 ---
 

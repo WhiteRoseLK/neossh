@@ -40,3 +40,6 @@ dist/
 # Binary output
 lazyssh
 neossh
+
+# MkDocs build directory
+site/
