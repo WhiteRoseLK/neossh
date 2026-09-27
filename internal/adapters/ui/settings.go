@@ -19,21 +19,44 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"go.uber.org/zap"
 )
 
 type settingsManager struct {
+	mu       sync.RWMutex
 	filePath string
 	logger   *zap.SugaredLogger
 }
 
+// SettingsManager manages user settings in ~/.neossh/settings.json.
+type SettingsManager = settingsManager
+
+// NewDefaultSettingsManager creates a SettingsManager using default paths and a no-op logger.
+func NewDefaultSettingsManager() *SettingsManager {
+	return newSettingsManager(zap.NewNop().Sugar())
+}
+
+// TunnelProfile represents a saved SSH port forwarding and tunnel configuration profile.
+type TunnelProfile struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`                   // "Local", "Remote", "Dynamic"
+	Port        string `json:"port"`                   // port number
+	Host        string `json:"host,omitempty"`         // destination host
+	HostPort    string `json:"host_port,omitempty"`    // destination port
+	BindAddress string `json:"bind_address,omitempty"` // bind address (e.g. 127.0.0.1, 0.0.0.0)
+	Mode        string `json:"mode,omitempty"`         // "Only forward" or "Forward + SSH"
+}
+
 type uiSettings struct {
-	SortMode                SortMode `json:"sort_mode,omitempty"`
-	Theme                   string   `json:"theme,omitempty"`
-	DefaultIdentityKey      string   `json:"default_identity_key,omitempty"`
-	AutoPingEnabled         bool     `json:"auto_ping_enabled,omitempty"`
-	AutoPingIntervalSeconds int      `json:"auto_ping_interval_seconds,omitempty"`
+	SortMode                SortMode                   `json:"sort_mode,omitempty"`
+	Theme                   string                     `json:"theme,omitempty"`
+	DefaultIdentityKey      string                     `json:"default_identity_key,omitempty"`
+	AutoPingEnabled         bool                       `json:"auto_ping_enabled,omitempty"`
+	AutoPingIntervalSeconds int                        `json:"auto_ping_interval_seconds,omitempty"`
+	TunnelProfiles          map[string][]TunnelProfile `json:"tunnel_profiles,omitempty"`
 }
 
 func newSettingsManager(logger *zap.SugaredLogger) *settingsManager {
@@ -73,7 +96,10 @@ func (m *settingsManager) LoadSortMode() (SortMode, error) {
 		return SortByAliasAsc, errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return SortByAliasAsc, err
 	}
@@ -90,13 +116,16 @@ func (m *settingsManager) SaveSortMode(mode SortMode) error {
 		return errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return err
 	}
 
 	settings.SortMode = mode
-	return m.save(settings)
+	return m.saveLocked(settings)
 }
 
 func (m *settingsManager) LoadTheme() (string, error) {
@@ -104,7 +133,10 @@ func (m *settingsManager) LoadTheme() (string, error) {
 		return ThemeDark, errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return ThemeDark, err
 	}
@@ -121,13 +153,16 @@ func (m *settingsManager) SaveTheme(theme string) error {
 		return errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return err
 	}
 
 	settings.Theme = theme
-	return m.save(settings)
+	return m.saveLocked(settings)
 }
 
 func (m *settingsManager) LoadDefaultIdentityKey() (string, error) {
@@ -135,7 +170,10 @@ func (m *settingsManager) LoadDefaultIdentityKey() (string, error) {
 		return "", errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return "", err
 	}
@@ -148,13 +186,16 @@ func (m *settingsManager) SaveDefaultIdentityKey(key string) error {
 		return errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return err
 	}
 
 	settings.DefaultIdentityKey = key
-	return m.save(settings)
+	return m.saveLocked(settings)
 }
 
 func (m *settingsManager) LoadAutoPing() (bool, int, error) {
@@ -162,7 +203,10 @@ func (m *settingsManager) LoadAutoPing() (bool, int, error) {
 		return false, 60, errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return false, 60, err
 	}
@@ -180,7 +224,10 @@ func (m *settingsManager) SaveAutoPing(enabled bool, intervalSeconds int) error 
 		return errors.New("nil settings manager")
 	}
 
-	settings, err := m.load()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
 	if err != nil {
 		return err
 	}
@@ -189,10 +236,108 @@ func (m *settingsManager) SaveAutoPing(enabled bool, intervalSeconds int) error 
 	if intervalSeconds > 0 {
 		settings.AutoPingIntervalSeconds = intervalSeconds
 	}
-	return m.save(settings)
+	return m.saveLocked(settings)
 }
 
-func (m *settingsManager) load() (uiSettings, error) {
+// LoadTunnelProfiles loads saved favorite tunnel profiles for the given host alias.
+func (m *settingsManager) LoadTunnelProfiles(alias string) ([]TunnelProfile, error) {
+	if m == nil {
+		return nil, errors.New("nil settings manager")
+	}
+
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return nil, err
+	}
+
+	if settings.TunnelProfiles == nil {
+		return nil, nil
+	}
+
+	profiles := settings.TunnelProfiles[alias]
+	if len(profiles) == 0 {
+		return nil, nil
+	}
+
+	out := make([]TunnelProfile, len(profiles))
+	copy(out, profiles)
+	return out, nil
+}
+
+// SaveTunnelProfile saves or updates a favorite tunnel profile for the given host alias.
+func (m *settingsManager) SaveTunnelProfile(alias string, profile TunnelProfile) error {
+	if m == nil {
+		return errors.New("nil settings manager")
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return err
+	}
+
+	if settings.TunnelProfiles == nil {
+		settings.TunnelProfiles = make(map[string][]TunnelProfile)
+	}
+
+	profiles := settings.TunnelProfiles[alias]
+	found := false
+	for i, p := range profiles {
+		if strings.EqualFold(p.Name, profile.Name) {
+			profiles[i] = profile
+			found = true
+			break
+		}
+	}
+	if !found {
+		profiles = append(profiles, profile)
+	}
+	settings.TunnelProfiles[alias] = profiles
+
+	return m.saveLocked(settings)
+}
+
+// DeleteTunnelProfile deletes a saved tunnel profile by name for the given host alias.
+func (m *settingsManager) DeleteTunnelProfile(alias string, profileName string) error {
+	if m == nil {
+		return errors.New("nil settings manager")
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return err
+	}
+
+	if settings.TunnelProfiles == nil {
+		return nil
+	}
+
+	profiles := settings.TunnelProfiles[alias]
+	newProfiles := make([]TunnelProfile, 0, len(profiles))
+	for _, p := range profiles {
+		if !strings.EqualFold(p.Name, profileName) {
+			newProfiles = append(newProfiles, p)
+		}
+	}
+
+	if len(newProfiles) == 0 {
+		delete(settings.TunnelProfiles, alias)
+	} else {
+		settings.TunnelProfiles[alias] = newProfiles
+	}
+
+	return m.saveLocked(settings)
+}
+
+func (m *settingsManager) loadLocked() (uiSettings, error) {
 	var settings uiSettings
 
 	data, err := os.ReadFile(m.filePath)
@@ -218,7 +363,7 @@ func (m *settingsManager) load() (uiSettings, error) {
 	return settings, nil
 }
 
-func (m *settingsManager) save(settings uiSettings) error {
+func (m *settingsManager) saveLocked(settings uiSettings) error {
 	if err := os.MkdirAll(filepath.Dir(m.filePath), 0o750); err != nil {
 		return err
 	}

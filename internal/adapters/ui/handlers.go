@@ -1433,105 +1433,9 @@ func (t *tui) handlePortForward() {
 }
 
 func (t *tui) showPortForwardForm(server domain.Server) *tview.Form {
-	typeChoices := []string{ForwardTypeLocal, ForwardTypeRemote, ForwardTypeDynamic}
-	modeChoices := []string{ForwardModeOnlyForward, ForwardModeForwardSSH}
+	modal := NewPortForwardModal(t.app, server, t.settings)
 
-	currentTypeIdx := 0
-	currentModeIdx := 0
-	portVal := ""
-	hostVal := "localhost"
-	hostPortVal := ""
-	bindAddrVal := ""
-
-	form := tview.NewForm()
-	form.SetBorder(true).
-		SetTitle(fmt.Sprintf(" Port Forwarding: %s ", server.Alias)).
-		SetTitleAlign(tview.AlignCenter)
-
-	dd := tview.NewDropDown()
-	hostField := tview.NewInputField()
-	hostPortField := tview.NewInputField()
-	portField := tview.NewInputField()
-	bindAddrField := tview.NewInputField()
-
-	dd.SetOptions(typeChoices, func(text string, index int) {
-		currentTypeIdx = index
-		// Toggle fields when switching type
-		isDynamic := typeChoices[currentTypeIdx] == ForwardTypeDynamic
-		if isDynamic {
-			hostField.SetText("").SetDisabled(true)
-			hostPortField.SetText("").SetDisabled(true)
-		} else {
-			hostField.SetDisabled(false)
-			hostPortField.SetDisabled(false)
-		}
-	})
-	dd.SetCurrentOption(currentTypeIdx)
-	form.AddFormItem(dd.SetLabel("Type"))
-
-	portField.SetLabel("Port").SetText(portVal).SetFieldWidth(8).SetChangedFunc(func(text string) { portVal = strings.TrimSpace(text) })
-	form.AddFormItem(portField)
-
-	hostField.SetLabel("Host").SetText(hostVal).SetFieldWidth(40).SetChangedFunc(func(text string) { hostVal = strings.TrimSpace(text) })
-	form.AddFormItem(hostField)
-
-	hostPortField.SetLabel("Host Port").SetText(hostPortVal).SetFieldWidth(8).SetChangedFunc(func(text string) { hostPortVal = strings.TrimSpace(text) })
-	form.AddFormItem(hostPortField)
-
-	bindAddrField.SetLabel("Bind Address (optional)").SetText(bindAddrVal).SetFieldWidth(40).SetChangedFunc(func(text string) { bindAddrVal = strings.TrimSpace(text) })
-	form.AddFormItem(bindAddrField)
-
-	mode := tview.NewDropDown().SetOptions(modeChoices, func(text string, index int) { currentModeIdx = index })
-	mode.SetCurrentOption(currentModeIdx)
-	form.AddFormItem(mode.SetLabel("Mode"))
-
-	isDynamic := typeChoices[currentTypeIdx] == ForwardTypeDynamic
-	if isDynamic {
-		hostField.SetText("").SetDisabled(true)
-		hostPortField.SetText("").SetDisabled(true)
-	}
-
-	form.AddButton("Start", func() {
-		if err := validatePort(portVal); err != nil {
-			t.showStatusTempColor("Invalid port: "+err.Error(), "#FF6B6B")
-			return
-		}
-		if bindAddrVal != "" {
-			if err := validateBindAddress(bindAddrVal); err != nil {
-				t.showStatusTempColor("Invalid bind address: "+err.Error(), "#FF6B6B")
-				return
-			}
-		}
-
-		ft := typeChoices[currentTypeIdx]
-		var args []string
-		if ft == ForwardTypeDynamic {
-			spec := portVal
-			if bindAddrVal != "" {
-				spec = bindAddrVal + ":" + portVal
-			}
-			args = append(args, "-D", spec)
-		} else {
-			if err := validateHost(hostVal); err != nil {
-				t.showStatusTempColor("Invalid host: "+err.Error(), "#FF6B6B")
-				return
-			}
-			if err := validatePort(hostPortVal); err != nil {
-				t.showStatusTempColor("Invalid host port: "+err.Error(), "#FF6B6B")
-				return
-			}
-			spec := portVal + ":" + hostVal + ":" + hostPortVal
-			if bindAddrVal != "" {
-				spec = bindAddrVal + ":" + spec
-			}
-			if ft == ForwardTypeLocal {
-				args = append(args, "-L", spec)
-			} else {
-				args = append(args, "-R", spec)
-			}
-		}
-
-		onlyForward := modeChoices[currentModeIdx] == ForwardModeOnlyForward
+	modal.OnStart(func(fType, port, host, hostPort, bindAddr string, onlyForward bool, args []string) {
 		alias := server.Alias
 		if onlyForward {
 			t.returnToMain()
@@ -1567,12 +1471,30 @@ func (t *tui) showPortForwardForm(server domain.Server) *tview.Form {
 			t.showSSHErrorModal(alias, sshErr.Error())
 		}
 	})
-	form.AddButton("Cancel", func() { t.returnToMain() })
-	form.SetCancelFunc(func() { t.returnToMain() })
 
-	t.app.SetRoot(form, true)
-	t.app.SetFocus(form)
-	return form
+	modal.OnCopied(func(cmd string) {
+		t.showStatusTemp("Copied command: " + cmd)
+	})
+
+	modal.OnCancel(func() {
+		t.returnToMain()
+	})
+
+	modal.OnStatusTemp(func(msg string, color ...string) {
+		c := ""
+		if len(color) > 0 {
+			c = color[0]
+		}
+		if c != "" {
+			t.showStatusTempColor(msg, c)
+		} else {
+			t.showStatusTemp(msg)
+		}
+	})
+
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal.form)
+	return modal.form
 }
 
 // =============================================================================

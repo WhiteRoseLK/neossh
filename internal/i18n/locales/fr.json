@@ -68,5 +68,13 @@
   "scp.use_alias": "Utiliser l'alias SSH",
   "scp.btn_copy": "Copier la commande",
   "scp.btn_cancel": "Annuler",
-  "scp.preview": "Commande générée :"
+  "scp.preview": "Commande générée :",
+
+  "forward.title": " Assistant de redirection de ports et tunnels SSH : %s ",
+  "forward.preview": "Commande générée :",
+  "forward.btn_start": "Démarrer",
+  "forward.btn_copy": "Copier la commande",
+  "forward.btn_save": "Enregistrer le profil",
+  "forward.btn_delete": "Supprimer le profil",
+  "forward.btn_cancel": "Annuler"
 }

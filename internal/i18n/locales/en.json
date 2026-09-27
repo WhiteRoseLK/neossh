@@ -68,5 +68,13 @@
   "scp.use_alias": "Use SSH Alias",
   "scp.btn_copy": "Copy Command",
   "scp.btn_cancel": "Cancel",
-  "scp.preview": "Generated Command:"
+  "scp.preview": "Generated Command:",
+
+  "forward.title": " SSH Port Forwarding & Tunnel Assistant: %s ",
+  "forward.preview": "Generated Command:",
+  "forward.btn_start": "Start",
+  "forward.btn_copy": "Copy Command",
+  "forward.btn_save": "Save Profile",
+  "forward.btn_delete": "Delete Profile",
+  "forward.btn_cancel": "Cancel"
 }

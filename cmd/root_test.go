@@ -657,6 +657,69 @@ func TestHandleSSHFSFlag(t *testing.T) {
 	}
 }
 
+func TestRootCmd_TunnelFlags(t *testing.T) {
+	t.Run("tunnel flag", func(t *testing.T) {
+		tunnelFlag = ""
+		cmd := newRootCmd()
+		err := cmd.ParseFlags([]string{"--tunnel", "myserver"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if tunnelFlag != "myserver" {
+			t.Errorf("expected tunnelFlag=%q, got %q", "myserver", tunnelFlag)
+		}
+	})
+
+	t.Run("forward flag alias", func(t *testing.T) {
+		tunnelFlag = ""
+		cmd := newRootCmd()
+		err := cmd.ParseFlags([]string{"--forward", "myserver"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if tunnelFlag != "myserver" {
+			t.Errorf("expected tunnelFlag=%q, got %q", "myserver", tunnelFlag)
+		}
+	})
+
+	t.Run("flag completions registered", func(t *testing.T) {
+		cmd := newRootCmd()
+		fn, found := cmd.GetFlagCompletionFunc("tunnel")
+		if !found || fn == nil {
+			t.Fatal("expected flag completion for 'tunnel' to be registered")
+		}
+		fn, found = cmd.GetFlagCompletionFunc("forward")
+		if !found || fn == nil {
+			t.Fatal("expected flag completion for 'forward' to be registered")
+		}
+	})
+}
+
+func TestHandleTunnelFlag(t *testing.T) {
+	svc := &mockDirectConnectService{
+		servers: []domain.Server{
+			{
+				Alias: "web-prod",
+				Host:  "10.0.0.1",
+				User:  "ubuntu",
+				Port:  2202,
+			},
+		},
+	}
+
+	// Test found
+	err := handleTunnelFlag(svc, "web-prod")
+	if err != nil {
+		t.Errorf("expected no error for valid server alias, got %v", err)
+	}
+
+	// Test not found
+	err = handleTunnelFlag(svc, "nonexistent")
+	if err == nil || !strings.Contains(err.Error(), "not found") {
+		t.Errorf("expected not found error, got %v", err)
+	}
+}
+
 func TestRootCmd_PreConnectFlag(t *testing.T) {
 	preConnectFlag = ""
 	cmd := newRootCmd()
