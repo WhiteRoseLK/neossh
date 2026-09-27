@@ -71,7 +71,7 @@ jobs:
         run: go build -v ./cmd/main.go
 
       - name: Check GoReleaser configuration
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: 2.9.0
           args: check
@@ -84,7 +84,7 @@ jobs:
 
       - name: Dry-run Packaging & Manifests (Release PRs only)
         if: startsWith(github.head_ref, 'release-please')
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: 2.9.0
           args: release --snapshot --clean --skip=publish
