@@ -770,6 +770,8 @@ func parseAuthOption(server *domain.Server, key, value string) error {
 		server.PasswordAuthentication = value
 	case "pubkeyauthentication":
 		server.PubkeyAuthentication = value
+	case "certificatefile":
+		server.CertificateFile = domain.ToTildePath(value)
 	case "kbdinteractiveauthentication":
 		server.KbdInteractiveAuthentication = value
 	case "preferredauthentications":

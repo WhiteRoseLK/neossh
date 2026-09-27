@@ -71,6 +71,7 @@ type Server struct {
 	PubkeyAcceptedAlgorithms    string
 	HostbasedAcceptedAlgorithms string
 	IdentitiesOnly              string
+	CertificateFile             string
 	// SSH Agent
 	AddKeysToAgent string
 	IdentityAgent  string

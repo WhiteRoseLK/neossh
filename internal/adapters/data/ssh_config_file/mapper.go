@@ -300,6 +300,8 @@ func (r *Repository) mapAuthenticationConfig(server *domain.Server, key, value s
 		server.PreferredAuthentications = value
 	case "identitiesonly":
 		server.IdentitiesOnly = value
+	case "certificatefile":
+		server.CertificateFile = domain.ToTildePath(value)
 	case "addkeystoagent":
 		server.AddKeysToAgent = value
 	case "identityagent":

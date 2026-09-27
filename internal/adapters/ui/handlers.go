@@ -1415,8 +1415,37 @@ func (t *tui) showErrorModal(title, errMsg string) {
 	t.app.SetFocus(modal)
 }
 
+func (t *tui) findServerByAlias(alias string) (domain.Server, bool) {
+	if t.serverList != nil {
+		for _, s := range t.serverList.GetServers() {
+			if s.Alias == alias {
+				return s, true
+			}
+			for _, a := range s.Aliases {
+				if a == alias {
+					return s, true
+				}
+			}
+		}
+	}
+	return domain.Server{}, false
+}
+
 func (t *tui) showSSHErrorModal(alias, errMsg string) {
-	t.showErrorModal(fmt.Sprintf("SSH connection to %q failed", alias), errMsg)
+	title := fmt.Sprintf("SSH connection to %q failed", alias)
+	msg := errMsg
+
+	// Detect if host has an expired SSH certificate
+	if server, ok := t.findServerByAlias(alias); ok {
+		if cert := domain.InspectServerCertificate(server); cert != nil && cert.Status == domain.CertStatusExpired {
+			ago := domain.FormatDuration(cert.TimeExpiredAgo)
+			certWarning := fmt.Sprintf("[red::b]⚠ SSH Certificate Expired[-]\nThe SSH certificate %q expired %s ago (valid until %s).\nAuthentication likely failed due to the expired certificate.\n\n[white::b]SSH Error:[-]\n",
+				cert.Path, ago, cert.ValidBefore.Format("2006-01-02 15:04:05"))
+			msg = certWarning + errMsg
+		}
+	}
+
+	t.showErrorModal(title, msg)
 }
 
 func (t *tui) showEditTagsForm(server domain.Server) {
