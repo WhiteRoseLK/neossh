@@ -60,6 +60,7 @@ If you are coming from **lazyssh**, here is a concrete summary of everything **n
 | **Secure Password Auth (sshpass)** | Automated password delivery for legacy hosts using `sshpass` backed by native OS keyring (macOS Keychain, Linux Secret Service, Windows Credential Manager) or AES-256-GCM vault—never written in plain text to `~/.ssh/config` or `metadata.json`. | `--password` / `-P` / UI form |
 | **SSHFS Remote Mounts** | Mount remote server filesystems locally with full SSH configuration (ports, identity files, jump proxies, auto-reconnect, and read-only flags) and copy ready-to-run mount/unmount commands. | <kbd>M</kbd> / `--sshfs <alias>` |
 | **SSH Port Forwarding & Tunnel Assistant** | Interactive port forwarding assistant for Local (`-L`), Remote (`-R`), and Dynamic SOCKS5 (`-D`) proxy tunnels. Supports saving favorite tunnel profiles per host in `~/.neossh/settings.json`, real-time command preview, background daemon launch, and one-touch command copy to clipboard. | <kbd>f</kbd> / `--tunnel <alias>` |
+| **Built-in Dual-Pane SFTP File Manager** | Interactive full-screen dual-pane file manager (WinSCP / FileZilla style) inside the TUI. Browse local and remote directories over the SSH connection via the SFTP subsystem with directory navigation, sorting (name, size, modification date), non-blocking streaming transfers (<kbd>u</kbd> for upload, <kbd>d</kbd> for download), transfer speed and progress indicators, and overwrite confirmation dialogs. | <kbd>F</kbd> / <kbd>Ctrl+F</kbd> |
 | **Paste SSH Command** | Parses any SSH command from system clipboard (flags, identity keys, ports, jump hosts) into an add-server modal with intelligent alias deduction and deduplication. | <kbd>v</kbd> |
 | **Duplicate / Clone Server** | Instantly clones any existing server configuration into the Add form with automatic alias deduplication (`srv_1`, `srv_2`), eliminating manual re-typing. | <kbd>y</kbd> / <kbd>C</kbd> |
 | **Zero-Friction Migration** | Automatically detects and migrates your favorites, tags, and connection history from `~/.lazyssh` to `~/.neossh`. | *Automatic* |
@@ -164,8 +165,9 @@ If you are coming from **lazyssh**, here is a concrete summary of everything **n
 - 🗝️ **Configurable Default Identity Key**: designate a default SSH private key (via CLI `--default-key <path>`, Git & SSH Keys Setup dialog, or `NEOSSH_DEFAULT_KEY`), automatically prefilling new servers.
 - 🏷️ **SSH Key Type Badges & FIDO2 Indicator**: visual badges displaying the key algorithm (`[ED25519]`, `[RSA-4096]`, `[ECDSA]`), FIDO2/security key detection (`[FIDO2]` for YubiKey, SoloKey), and file existence status (✓ found / ⚠ missing) in server details.
 
-### Remote Filesystem Mounts (SSHFS)
+### Remote Filesystem Mounts (SSHFS) & SFTP File Manager
 - 📂 **SSHFS Remote Mounts** (<kbd>M</kbd>): mount remote server filesystems locally with full SSH configuration (ports, identity files, jump proxies, auto-reconnect, and read-only flags) and copy ready-to-run mount/unmount commands.
+- 📁 **Dual-Pane SFTP File Manager** (<kbd>F</kbd> or <kbd>Ctrl+F</kbd>): interactive WinSCP / FileZilla style file manager with local (left) and remote (right) panels, directory navigation, sorting by name/size/date (<kbd>s</kbd>), seamless uploads (<kbd>u</kbd>) and downloads (<kbd>d</kbd>), real-time streaming transfer progress, and overwrite confirmation dialogs.
 
 ### Internationalization & Localization (i18n)
 - 🌐 Multilingual user interface with native support for English (`en`), French (`fr`), and Simplified Chinese (`zh-CN`).
@@ -487,6 +489,7 @@ neossh completion powershell > "$HOME\Documents\PowerShell\neossh.ps1"
 | `y` | Duplicate / clone selected server entry *(disabled in read-only mode)* |
 | `K` | Terminate active SSH session (when on Active Sessions) / Push SSH key via `ssh-copy-id` (when on Servers) *(disabled in read-only mode)* |
 | `f` | Open interactive SSH port forwarding and tunnel assistant (Local `-L`, Remote `-R`, Dynamic SOCKS5 `-D`, saved favorite profiles, live command preview, and clipboard copy) |
+| `F` / `Ctrl+F` | Open built-in dual-pane SFTP file manager (WinSCP / FileZilla style: local & remote browsing, file upload/download with real-time transfer progress and overwrite confirmation) |
 | `s` | Toggle sort mode (alias, last SSH, reverse) |
 | `g` | Ping selected server |
 | `G` | Ping all servers (parallel check with latency badges) |

@@ -82,7 +82,8 @@ var hotkeyMap = map[rune]rune{
 	'r': 'r', 'R': 'r',
 	't': 't',
 	'T': 'T',
-	'f': 'f', 'F': 'f',
+	'f': 'f',
+	'F': 'F',
 	'x': 'x', 'X': 'x',
 	'j': 'j', 'J': 'j',
 	'k': 'k',
@@ -146,6 +147,11 @@ func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 
 	if event.Key() == tcell.KeyCtrlG {
 		t.handleGitSSHSetup()
+		return nil
+	}
+
+	if event.Key() == tcell.KeyCtrlF {
+		t.handleSFTPFileManager()
 		return nil
 	}
 
@@ -261,6 +267,9 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 		return true
 	case 'f':
 		t.handlePortForward()
+		return true
+	case 'F':
+		t.handleSFTPFileManager()
 		return true
 	case 'x':
 		t.handleStopForwarding()
@@ -445,6 +454,48 @@ func (t *tui) handleSSHFSCommandGenerator() {
 		})
 
 	_ = modal.Show()
+}
+
+func (t *tui) handleSFTPFileManager() {
+	server, ok := t.serverList.GetSelectedServer()
+	if !ok {
+		t.showStatusTemp("No server selected")
+		return
+	}
+	if server.IsWildcardServer() {
+		t.showErrorModal("SFTP Warning", "Cannot start SFTP session on a wildcard pattern block")
+		return
+	}
+
+	t.showStatusTemp("Connecting SFTP to " + server.Alias + "…")
+
+	go func() {
+		sftpSrc, err := NewSFTPFileSource(server)
+		if err != nil {
+			t.app.QueueUpdateDraw(func() {
+				t.showErrorModal("SFTP Connection Failed", err.Error())
+			})
+			return
+		}
+
+		localSrc, err := NewLocalFileSource()
+		if err != nil {
+			_ = sftpSrc.Close()
+			t.app.QueueUpdateDraw(func() {
+				t.showErrorModal("Local Filesystem Error", err.Error())
+			})
+			return
+		}
+
+		t.app.QueueUpdateDraw(func() {
+			mgr := NewSFTPManager(t.app, localSrc, sftpSrc)
+			mgr.OnClose(func() {
+				t.returnToMain()
+			})
+			t.app.SetRoot(mgr, true)
+			t.app.SetFocus(mgr.leftTable)
+		})
+	}()
 }
 
 func (t *tui) handlePasteCommand() {
