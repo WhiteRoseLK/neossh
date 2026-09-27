@@ -265,6 +265,23 @@ func (r *Repository) GetConfigFile() string {
 	return r.configPath
 }
 
+// GetConfigFiles returns the paths of the main SSH config file and all resolved Include files.
+func (r *Repository) GetConfigFiles() ([]string, error) {
+	lc, err := r.loadConfig()
+	if err != nil {
+		return nil, err
+	}
+	return lc.paths(), nil
+}
+
+// GetMetadataFile gets the path to the metadata file.
+func (r *Repository) GetMetadataFile() string {
+	if r.metadataManager == nil {
+		return ""
+	}
+	return r.metadataManager.filePath
+}
+
 // GetSettings returns the application settings.
 func (r *Repository) GetSettings() (Settings, error) {
 	return r.metadataManager.GetSettings()

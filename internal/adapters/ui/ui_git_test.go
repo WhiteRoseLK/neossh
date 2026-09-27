@@ -86,6 +86,8 @@ func (m *mockServerRepoForUI) SetPinned(_ string, _ bool) error              { r
 func (m *mockServerRepoForUI) SetHidden(_ string, _ bool) error              { return nil }
 func (m *mockServerRepoForUI) RecordSSH(_ string) error                      { return nil }
 func (m *mockServerRepoForUI) GetConfigFile() string                         { return "" }
+func (m *mockServerRepoForUI) GetConfigFiles() ([]string, error)             { return []string{""}, nil }
+func (m *mockServerRepoForUI) GetMetadataFile() string                       { return "" }
 func (m *mockServerRepoForUI) DiscoverKnownHosts(_ string) ([]domain.Server, domain.ImportResult, error) {
 	return nil, domain.ImportResult{}, nil
 }

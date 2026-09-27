@@ -39,6 +39,8 @@ func (m *mockServerRepo) SetPinned(alias string, pinned bool) error          { r
 func (m *mockServerRepo) SetHidden(alias string, hidden bool) error          { return nil }
 func (m *mockServerRepo) RecordSSH(alias string) error                       { return nil }
 func (m *mockServerRepo) GetConfigFile() string                              { return "" }
+func (m *mockServerRepo) GetConfigFiles() ([]string, error)                  { return []string{""}, nil }
+func (m *mockServerRepo) GetMetadataFile() string                            { return "" }
 func (m *mockServerRepo) DiscoverKnownHosts(path string) ([]domain.Server, domain.ImportResult, error) {
 	return nil, domain.ImportResult{}, nil
 }
