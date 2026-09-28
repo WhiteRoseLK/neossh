@@ -911,3 +911,8 @@ func getFileMode(path string) (os.FileMode, error) {
 	}
 	return info.Mode(), nil
 }
+
+// GetSSHAgentStatus returns live telemetry on the active SSH agent.
+func (gs *gitService) GetSSHAgentStatus() domain.SSHAgentStatus {
+	return QuerySSHAgentStatus()
+}

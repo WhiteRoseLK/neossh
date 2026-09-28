@@ -77,6 +77,26 @@ func (m *mockServerService) ImportKnownHosts(string) (domain.ImportResult, error
 	return domain.ImportResult{}, nil
 }
 
+func (m *mockServerService) ListKnownHostRecords(string) ([]domain.KnownHostRecord, error) {
+	return nil, nil
+}
+
+func (m *mockServerService) RemoveKnownHost(string, string, int) (string, int, error) {
+	return "known_hosts.old", 1, nil
+}
+
+func (m *mockServerService) RemoveKnownHostByLine(string, int) (string, error) {
+	return "known_hosts.old", nil
+}
+
+func (m *mockServerService) ScanAndAddKnownHost(string, string, int) (*domain.KnownHostRecord, error) {
+	return nil, nil
+}
+
+func (m *mockServerService) GetSSHAgentStatus() domain.SSHAgentStatus {
+	return domain.SSHAgentStatus{Available: true, KeyCount: 1, Type: domain.AgentTypeOpenSSH}
+}
+
 func (m *mockServerService) SetHidden(alias string, hidden bool) error {
 	for i := range m.servers {
 		if m.servers[i].Alias == alias {

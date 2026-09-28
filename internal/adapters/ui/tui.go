@@ -92,6 +92,8 @@ type tui struct {
 	language                 string
 	defaultIdentityKey       string
 	customKeybindings        map[rune]rune
+	agentStatus              domain.SSHAgentStatus
+	agentStatusMu            sync.RWMutex
 }
 
 func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, cfg ...Config) App {
@@ -150,7 +152,24 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		defaultIdentityKey:       defaultIdentityKey,
 	}
 	t.initCustomKeybindings()
+	t.refreshAgentStatus()
 	return t
+}
+
+func (t *tui) refreshAgentStatus() {
+	if t.serverService == nil {
+		return
+	}
+	st := t.serverService.GetSSHAgentStatus()
+	t.agentStatusMu.Lock()
+	t.agentStatus = st
+	t.agentStatusMu.Unlock()
+}
+
+func (t *tui) getAgentStatus() domain.SSHAgentStatus {
+	t.agentStatusMu.RLock()
+	defer t.agentStatusMu.RUnlock()
+	return t.agentStatus
 }
 
 func (t *tui) getDefaultIdentityKey() string {
@@ -321,10 +340,12 @@ func (t *tui) buildComponents() {
 	t.activeList.SetTitle(i18n.T("app.title_active"))
 	t.details = NewServerDetails(t.readonly).
 		SetGitService(t.gitService, t.serverRepo).
+		SetAgentStatusFunc(t.getAgentStatus).
 		OnTab(t.handleSearchFocus).
 		OnBacktab(t.handleActiveListFocus).
 		OnEscape(t.handleServerListFocus)
 	t.statusBar = NewStatusBar(t.readonly)
+	t.statusBar.SetText(t.defaultStatusText())
 
 	// default sort mode
 	t.sortMode = SortByAliasAsc

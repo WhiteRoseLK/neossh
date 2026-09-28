@@ -30,12 +30,13 @@ import (
 
 type ServerDetails struct {
 	*tview.TextView
-	readonly   bool
-	gitService ports.GitService
-	serverRepo ports.ServerRepository
-	onTab      func()
-	onBacktab  func()
-	onEscape   func()
+	readonly        bool
+	gitService      ports.GitService
+	serverRepo      ports.ServerRepository
+	agentStatusFunc func() domain.SSHAgentStatus
+	onTab           func()
+	onBacktab       func()
+	onEscape        func()
 }
 
 func NewServerDetails(readonly ...bool) *ServerDetails {
@@ -55,6 +56,12 @@ func NewServerDetails(readonly ...bool) *ServerDetails {
 func (sd *ServerDetails) SetGitService(gs ports.GitService, sr ports.ServerRepository) *ServerDetails {
 	sd.gitService = gs
 	sd.serverRepo = sr
+	return sd
+}
+
+// SetAgentStatusFunc configures a function to query live SSH agent status.
+func (sd *ServerDetails) SetAgentStatusFunc(fn func() domain.SSHAgentStatus) *ServerDetails {
+	sd.agentStatusFunc = fn
 	return sd
 }
 
@@ -346,10 +353,22 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 		if sshKey.Comment != "" {
 			text += fmt.Sprintf("  Comment: [white]%s[-]\n", sshKey.Comment)
 		}
-		if sshKey.LoadedInAgent {
-			text += "  Agent: [green]✓ Loaded in ssh-agent[-]\n"
+		loadedInAgent := sshKey.LoadedInAgent
+		agentName := "ssh-agent"
+		if sd.agentStatusFunc != nil {
+			st := sd.agentStatusFunc()
+			if st.Available {
+				agentName = string(st.Type)
+				if st.HasKey(sshKey.Fingerprint, sshKey.Comment, sshKey.Path) {
+					loadedInAgent = true
+				}
+			}
+		}
+
+		if loadedInAgent {
+			text += fmt.Sprintf("  Agent: [green]✓ Loaded in %s[-]\n", agentName)
 		} else {
-			text += "  Agent: [dim]○ Not loaded in ssh-agent[-]\n"
+			text += fmt.Sprintf("  Agent: [dim]○ Not loaded in %s (press 'l' to load)[-]\n", agentName)
 		}
 		if sshKey.IsEncrypted {
 			text += "  Status: [yellow]🔒 Encrypted (passphrase)[-]\n"

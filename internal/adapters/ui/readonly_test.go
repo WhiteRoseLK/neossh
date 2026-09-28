@@ -157,6 +157,10 @@ func (m *mockReadOnlyService) LaunchFileManager(alias string, customTool string)
 
 func (m *mockReadOnlyService) UpdateServerPing(string, string, time.Duration) {}
 
+func (m *mockReadOnlyService) GetSSHAgentStatus() domain.SSHAgentStatus {
+	return domain.SSHAgentStatus{Available: true, KeyCount: 2, Type: domain.AgentTypeOpenSSH}
+}
+
 func TestTUI_ReadOnlyState(t *testing.T) {
 	logger := zap.NewNop().Sugar()
 	mockSvc := &mockReadOnlyService{}
