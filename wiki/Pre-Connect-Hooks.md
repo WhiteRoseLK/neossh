@@ -1,4 +1,4 @@
-#  Pre-Connect Hooks
+# Pre-Connect Hooks
 
 Run custom local commands or scripts automatically before connecting to an SSH host.
 

@@ -1,8 +1,8 @@
-#  Search & Navigation
+# Search & Navigation
 
 ## Fuzzy Search
 
-Press <kbd>slash</kbd> or <kbd>0</kbd> to activate the search bar. Type to fuzzy search across server aliases, hostnames, IP addresses, usernames, and tags.
+Press <kbd>/</kbd> or <kbd>0</kbd> to activate the search bar. Type to fuzzy search across server aliases, hostnames, IP addresses, usernames, and tags.
 
 ## Advanced Filter Syntax
 
@@ -21,10 +21,10 @@ Combine structured filters with free-text search for precise results:
 
 > [!NOTE]
 > **Example: Combining filters**
-    ```
-    tag:prod user:root status:up web
-    ```
-    This finds servers tagged `prod`, with user `root`, that are online, and contain "web" in the alias or hostname.
+> ```
+> tag:prod user:root status:up web
+> ```
+> This finds servers tagged `prod`, with user `root`, that are online, and contain "web" in the alias or hostname.
 
 ### Aliases
 
@@ -43,11 +43,11 @@ neossh has four main panels:
 | Active Sessions | <kbd>2</kbd> | Running SSH sessions |
 | Details | <kbd>3</kbd> | Selected server details |
 
-Use <kbd>tab</kbd> / ++shift+tab<kbd> to cycle focus between panels.
+Use <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> to cycle focus between panels.
 
 ## Sorting
 
-Press </kbd>s++ to toggle sort mode:
+Press <kbd>s</kbd> to toggle sort mode:
 
 1. **Alias** (A→Z)
 2. **Alias** (Z→A)
@@ -70,7 +70,7 @@ neossh -f prod
 
 > [!TIP]
 > **Screen sharing safety**
-    Use pre-filtering during screen shares or demos to show only relevant servers.
+> Use pre-filtering during screen shares or demos to show only relevant servers.
 
 ## Direct Connect
 

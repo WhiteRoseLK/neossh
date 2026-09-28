@@ -1,4 +1,4 @@
-#  Server Management
+# Server Management
 
 ## Viewing Servers
 
@@ -15,7 +15,7 @@ Press <kbd>a</kbd> to open the add server form. The form provides a comprehensiv
 
 > [!TIP]
 > **Default identity key**
-    Configure a global default key with `neossh --default-key ~/.ssh/id_ed25519` to auto-prefill the identity file for new servers.
+> Configure a global default key with `neossh --default-key ~/.ssh/id_ed25519` to auto-prefill the identity file for new servers.
 
 ## Editing Servers
 
@@ -34,18 +34,18 @@ Press <kbd>p</kbd> to pin a server to the top of the list. Pinned servers are pe
 Some hosts (jump hosts, proxy targets, internal nodes) are better kept out of the main list:
 
 - Press <kbd>m</kbd> on a server to toggle hidden/visible
-- Press ++shift+h<kbd> to toggle showing hidden servers in the list
+- Press <kbd>Shift+H</kbd> to toggle showing hidden servers in the list
 - Launch with `neossh -H` to start with hidden servers visible
 
 Hidden status is stored as `# hidden` in your SSH config.
 
 ## Duplicate / Clone
 
-Press </kbd>y<kbd> or </kbd>shift+c<kbd> to clone a server configuration. neossh automatically deduplicates the alias (`srv` → `srv_1` → `srv_2`).
+Press <kbd>y</kbd> or <kbd>Shift+C</kbd> to clone a server configuration. neossh automatically deduplicates the alias (`srv` → `srv_1` → `srv_2`).
 
 ## Paste SSH Command
 
-Press </kbd>v<kbd> to parse an SSH command from your clipboard into the add server form. neossh intelligently extracts flags, identity keys, ports, jump hosts, and deduces an alias.
+Press <kbd>v</kbd> to parse an SSH command from your clipboard into the add server form. neossh intelligently extracts flags, identity keys, ports, jump hosts, and deduces an alias.
 
 ## Server Folders & Groups
 
@@ -58,8 +58,8 @@ Host prod/web/frontend
 Host staging/api
 ```
 
-- Press </kbd>space<kbd> or </kbd>enter<kbd> on a group header to toggle collapse/expand
-- Press </kbd>m<kbd> on a group header for the group menu:
+- Press <kbd>Space</kbd> or <kbd>Enter</kbd> on a group header to toggle collapse/expand
+- Press <kbd>m</kbd> on a group header for the group menu:
     - **Tmux Connect All**: Launch tmux with panes connected to all servers in the group
     - **Collapse All / Expand All**: Batch toggle all groups
 
@@ -77,8 +77,8 @@ All aliases are indexed for fuzzy search and connection. They are preserved verb
 
 ## Active SSH Sessions Panel
 
-Press </kbd>2<kbd> to focus the Active Sessions panel. This panel tracks running SSH and background sessions with:
+Press <kbd>2</kbd> to focus the Active Sessions panel. This panel tracks running SSH and background sessions with:
 
 - **Process inspection**: PID, forwarded ports, identity keys
-- **One-touch termination**: Press </kbd>shift+k<kbd> to kill a session
-- **Config generation**: Press </kbd>a++ to create a server entry from a running connection
+- **One-touch termination**: Press <kbd>Shift+K</kbd> to kill a session
+- **Config generation**: Press <kbd>a</kbd> to create a server entry from a running connection

@@ -1,4 +1,4 @@
-#  Shell Autocompletion
+# Shell Autocompletion
 
 `neossh` includes rich shell autocompletion for **Bash**, **Zsh**, **Fish**, and **PowerShell**, complete with dynamic server alias suggestions directly parsed from your SSH configuration.
 
@@ -6,7 +6,7 @@
 
 ## Capabilities
 
-- **Dynamic Server Alias Completion**: Press <kbd>tab</kbd> after `neossh`, `neossh -c`, `neossh --scp`, `neossh --sshfs`, `neossh --sftp`, or `neossh --tunnel` to view matching host aliases along with their `user@host:port` descriptions.
+- **Dynamic Server Alias Completion**: Press <kbd>Tab</kbd> after `neossh`, `neossh -c`, `neossh --scp`, `neossh --sshfs`, `neossh --sftp`, or `neossh --tunnel` to view matching host aliases along with their `user@host:port` descriptions.
 - **Flag & Option Completion**: Flags like `--theme` suggest available themes (`dark`, `light`, `system`), `--lang` suggests supported locales (`en`, `fr`, `zh-CN`), and `--sshconfig` / `--known-hosts` trigger path completions.
 
 ---

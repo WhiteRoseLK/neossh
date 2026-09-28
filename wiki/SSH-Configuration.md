@@ -1,4 +1,4 @@
-#  SSH Configuration
+# SSH Configuration
 
 ## Config Include Support
 

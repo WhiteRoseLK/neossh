@@ -1,4 +1,4 @@
-#  Server Tags in SSH Config Comments
+# Server Tags in SSH Config Comments
 
 `neossh` allows assigning custom tags to servers (e.g., `prod`, `database`, `aws`, `k8s`) for rapid filtering and organization.
 
@@ -37,13 +37,13 @@ Host db-primary
 1. Highlight any server in the list.
 2. Press <kbd>t</kbd> to open the tag editor modal.
 3. Add, remove, or modify tags separated by commas.
-4. Press <kbd>enter</kbd> to save. The changes are immediately written to your `~/.ssh/config`.
+4. Press <kbd>Enter</kbd> to save. The changes are immediately written to your `~/.ssh/config`.
 
 ---
 
 ## Filtering by Tags
 
-In the search bar (<kbd>slash</kbd> or <kbd>0</kbd>):
+In the search bar (<kbd>/</kbd> or <kbd>0</kbd>):
 
 ```
 tag:prod
