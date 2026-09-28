@@ -1238,9 +1238,14 @@ func isRemoteDisconnectError(err error, stderr string) bool {
 		"connection closed by foreign host",
 		"closed by remote host",
 		"closed by foreign host",
+		"remote host closed the connection",
+		"connection closed",
 		"connection reset by peer",
 		"connection to ",
 		"kex_exchange_identification",
+		"packet_write_wait",
+		"broken pipe",
+		"software caused connection abort",
 	}
 
 	for _, signal := range disconnectSignals {

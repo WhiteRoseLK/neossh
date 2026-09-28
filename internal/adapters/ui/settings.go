@@ -58,6 +58,7 @@ type uiSettings struct {
 	AutoPingIntervalSeconds int                        `json:"auto_ping_interval_seconds,omitempty"`
 	TunnelProfiles          map[string][]TunnelProfile `json:"tunnel_profiles,omitempty"`
 	FileManager             string                     `json:"file_manager,omitempty"`
+	Keybindings             map[string]string          `json:"keybindings,omitempty"`
 }
 
 func newSettingsManager(logger *zap.SugaredLogger) *settingsManager {
@@ -413,5 +414,57 @@ func (m *settingsManager) SaveFileManager(fm string) error {
 	}
 
 	settings.FileManager = strings.TrimSpace(fm)
+	return m.saveLocked(settings)
+}
+
+// LoadKeybindings returns the custom keybindings map from settings.
+func (m *settingsManager) LoadKeybindings() (map[string]string, error) {
+	if m == nil {
+		return nil, errors.New("nil settings manager")
+	}
+
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return nil, err
+	}
+
+	if settings.Keybindings == nil {
+		return make(map[string]string), nil
+	}
+
+	result := make(map[string]string, len(settings.Keybindings))
+	for k, v := range settings.Keybindings {
+		result[strings.TrimSpace(k)] = strings.TrimSpace(v)
+	}
+	return result, nil
+}
+
+// SaveKeybindings saves the custom keybindings map to settings.
+func (m *settingsManager) SaveKeybindings(kb map[string]string) error {
+	if m == nil {
+		return errors.New("nil settings manager")
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	settings, err := m.loadLocked()
+	if err != nil {
+		return err
+	}
+
+	cleaned := make(map[string]string, len(kb))
+	for k, v := range kb {
+		kClean := strings.TrimSpace(k)
+		vClean := strings.TrimSpace(v)
+		if kClean != "" && vClean != "" {
+			cleaned[kClean] = vClean
+		}
+	}
+
+	settings.Keybindings = cleaned
 	return m.saveLocked(settings)
 }

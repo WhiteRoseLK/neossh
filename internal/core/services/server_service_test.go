@@ -250,6 +250,10 @@ func TestIsRemoteDisconnectError(t *testing.T) {
 		t.Fatalf("expected remote disconnect error to be detected")
 	}
 
+	if !isRemoteDisconnectError(err, "packet_write_wait: Connection to 192.168.1.1 port 22: Broken pipe\n") {
+		t.Fatalf("expected broken pipe error to be treated as disconnect")
+	}
+
 	cmd = helperCommandFactory("permission")("example")
 	err = cmd.Run()
 	if err == nil {

@@ -77,6 +77,20 @@ Stores application preferences, configured tools, and saved tunnel profiles:
 | `auto_ping` | boolean | Automatically trigger parallel background pings at startup | `false` |
 | `default_identity_key` | string | Path to default private key prefilled on new server forms | `""` |
 | `tunnel_profiles` | object | Saved port forwarding profiles mapped by server alias | `{}` |
+| `keybindings` | object | Custom keybinding overrides for actions (e.g. `{"add_server": "n", "clone_server": "c"}`) | `{}` |
+
+#### Custom Keybindings Example (e.g. AZERTY / custom layouts):
+
+```json
+{
+  "keybindings": {
+    "add_server": "n",
+    "clone_server": "c",
+    "copy_command": "y",
+    "quit": "x"
+  }
+}
+```
 
 ---
 
