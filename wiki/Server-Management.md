@@ -63,6 +63,17 @@ Host staging/api
     - **Tmux Connect All**: Launch tmux with panes connected to all servers in the group
     - **Collapse All / Expand All**: Batch toggle all groups
 
+## Multi-Server Selection & Bulk Operations
+
+Select multiple servers in the main server list to perform operations in bulk:
+
+- **Checkbox Toggle**: Press <kbd>Space</kbd> on any focused server to toggle selection (`[✓]` / `[ ]`).
+- **Select All**: Press <kbd>Ctrl+A</kbd> or <kbd>*</kbd> to select all servers in the current view, or toggle selection across all servers in a focused group.
+- **Clear Selection**: Press <kbd>Esc</kbd> to deselect all servers (pressing <kbd>Esc</kbd> again returns focus to the search bar).
+- **Status Counter**: A dynamic badge in the status bar displays the count of selected servers (e.g. `[3 servers selected]`).
+- **Bulk Ping**: Press <kbd>Shift+G</kbd> to ping only the selected servers concurrently (falls back to pinging all servers when none are selected).
+- **Bulk Tagging**: Press <kbd>t</kbd> when multiple servers are selected to open the bulk tag modal and add/remove tags across all selected servers simultaneously.
+
 ## Multi-Alias Support
 
 neossh preserves all space-separated aliases on a single `Host` line:

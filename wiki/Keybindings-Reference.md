@@ -9,18 +9,20 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | Key | Action | Read-Only Safe? | Description |
 |:---:|---|:---:|---|
 | <kbd>Enter</kbd> | **SSH Connect** | ✅ Yes | Open native SSH connection to selected server |
+| <kbd>Space</kbd> | **Select / Toggle Group** | ✅ Yes | Toggle multi-selection on server (`[✓]` / `[ ]`) or expand/collapse group |
+| <kbd>Ctrl+A</kbd> / <kbd>*</kbd> | **Select All / Group** | ✅ Yes | Toggle select all displayed servers or toggle select servers in focused group |
+| <kbd>Esc</kbd> | **Clear Selection / Return** | ✅ Yes | Clear multi-selection if active, otherwise return to search bar |
 | <kbd>/</kbd> | **Search** | ✅ Yes | Open fuzzy search input bar |
 | <kbd>a</kbd> | **Add Server** | 🔒 Blocked | Open modal form to add a new server entry |
 | <kbd>e</kbd> | **Edit Server** | 🔒 Blocked | Open modal form to edit selected server configuration |
 | <kbd>d</kbd> | **Delete Server** | 🔒 Blocked | Safely delete selected server with confirmation dialog |
 | <kbd>i</kbd> | **Import Known Hosts** | 🔒 Blocked | Import discovered hosts from `~/.ssh/known_hosts` |
 | <kbd>Shift+I</kbd> | **Known Hosts Manager** | 🔒 Blocked | Inspect, search, and delete host key entries from `~/.ssh/known_hosts` |
-| <kbd>Space</kbd> | **Toggle Group** | ✅ Yes | Expand or collapse server folder group |
 | <kbd>m</kbd> | **Context Menu** | 🔒 Blocked* | Toggle hidden server (on server) / Group tmux menu (on group) |
 | <kbd>Shift+H</kbd> | **Toggle Hidden** | ✅ Yes | Toggle visibility of hidden servers in the list |
 | <kbd>p</kbd> | **Pin / Unpin** | 🔒 Blocked | Pin or unpin server to top of list |
 | <kbd>Shift+P</kbd> / <kbd>Ctrl+G</kbd> | **Git SSH Profiles** | 🔒 Blocked | Open Git SSH Key Configuration & Profile Switcher |
-| <kbd>t</kbd> | **Edit Tags** | 🔒 Blocked | Edit tags stored in SSH config comments |
+| <kbd>t</kbd> | **Edit Tags / Bulk Tags** | 🔒 Blocked | Edit tags for focused server, or bulk edit tags across all selected servers |
 | <kbd>Shift+T</kbd> | **Toggle Theme** | ✅ Yes | Cycle themes: Dark → Light → System |
 | <kbd>c</kbd> | **Copy SSH Command** | ✅ Yes | Copy full connection command to system clipboard |
 | <kbd>o</kbd> | **SCP Modal** | ✅ Yes | Open SCP command generator to copy upload/download commands |
@@ -37,7 +39,7 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | <kbd>Ctrl+F</kbd> | **Dual-Pane SFTP** | ✅ Yes | Open built-in dual-pane SFTP manager directly |
 | <kbd>s</kbd> | **Toggle Sort** | ✅ Yes | Cycle sort mode (Alias A-Z, Z-A, Last SSH) |
 | <kbd>g</kbd> | **Ping Server** | ✅ Yes | Ping selected server and measure round-trip latency |
-| <kbd>Shift+G</kbd> | **Ping All** | ✅ Yes | Parallel ping all servers with color-coded latency badges |
+| <kbd>Shift+G</kbd> | **Ping All / Selected** | ✅ Yes | Parallel ping all servers or only selected servers with color-coded latency badges |
 | <kbd>Shift+W</kbd> / <kbd>Ctrl+P</kbd> | **Ping Watch** | ✅ Yes | Toggle periodic background ping watch mode (default: 60s) |
 | <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> | **Cycle Panels** | ✅ Yes | Move focus through Search, Servers, Active, Details panels |
 | <kbd>0</kbd> | **Focus Search** | ✅ Yes | Jump focus directly to search bar |
