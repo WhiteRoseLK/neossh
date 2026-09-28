@@ -12,8 +12,8 @@
   "search.title": " 0 搜索 (/ 过滤, Esc 退出) ",
   "search.placeholder": "例如 prod, tag:aws, user:root, status:up",
 
-  "statusbar.readonly": "[yellow::b]只读模式[::-] (禁止修改) • [white]空格[-] 选择 • [white]Tab[-] 切换面板 • [white]Enter[-] 连接 • [white]c[-] 复制 • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]T[-] 主题 • [white]q[-] 退出",
-  "statusbar.normal": "[white]空格[-] 选择 • [white]Tab[-] 切换面板 • [white]Enter[-] 连接 • [white]a[-] 添加 • [white]e[-] 编辑 • [white]d[-] 删除 • [white]c[-] 复制 • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]C[-] 备注 • [white]l/u[-] Agent • [white]T[-] 主题 • [white]q[-] 退出",
+  "statusbar.readonly": "[yellow::b]只读模式[::-] (禁止修改) • [white]空格[-] 选择 • [white]Tab[-] 切换面板 • [white]Enter[-] 连接 • [white]c[-] 复制 • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]X[-] Snippets • [white]T[-] 主题 • [white]q[-] 退出",
+  "statusbar.normal": "[white]空格[-] 选择 • [white]Tab[-] 切换面板 • [white]Enter[-] 连接 • [white]a[-] 添加 • [white]e[-] 编辑 • [white]d[-] 删除 • [white]c[-] 复制 • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]C[-] 备注 • [white]X[-] Snippets • [white]l/u[-] Agent • [white]T[-] 主题 • [white]q[-] 退出",
 
   "details.title": " 详细信息 ",
   "details.label.basic": "基础设置:",

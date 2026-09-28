@@ -23,6 +23,7 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | <kbd>p</kbd> | **Pin / Unpin** | 🔒 Blocked | Pin or unpin server to top of list |
 | <kbd>Shift+P</kbd> / <kbd>Ctrl+G</kbd> | **Git SSH Profiles** | 🔒 Blocked | Open Git SSH Key Configuration & Profile Switcher |
 | <kbd>t</kbd> | **Edit Tags / Bulk Tags** | 🔒 Blocked | Edit tags for focused server, or bulk edit tags across all selected servers |
+| <kbd>Shift+X</kbd> / <kbd>X</kbd> | **Command Snippets & Runner** | ✅ Yes | Open command snippets library & multi-server execution runner |
 | <kbd>Shift+T</kbd> | **Toggle Theme** | ✅ Yes | Cycle themes: Dark → Light → System |
 | <kbd>c</kbd> | **Copy SSH Command** | ✅ Yes | Copy full connection command to system clipboard |
 | <kbd>o</kbd> | **SCP Modal** | ✅ Yes | Open SCP command generator to copy upload/download commands |

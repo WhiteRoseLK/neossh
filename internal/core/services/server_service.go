@@ -57,6 +57,7 @@ type serverService struct {
 
 	newSSHCommand         func(alias string) *exec.Cmd
 	newSSHCommandWithArgs func(alias string, extraArgs []string) *exec.Cmd
+	newSSHExecCommand     func(alias, command string, interactive bool) *exec.Cmd
 	newSFTPCommand        func(alias string, args []string) *exec.Cmd
 	newFileManagerCommand func(tool string, args []string) *exec.Cmd
 	newHookCommand        func(cmdStr string) *exec.Cmd
@@ -113,6 +114,16 @@ func NewServerService(logger *zap.SugaredLogger, sr ports.ServerRepository, opts
 		newSSHCommandWithArgs: func(alias string, extraArgs []string) *exec.Cmd {
 			args := append([]string{}, extraArgs...)
 			args = append(args, "-F", sr.GetConfigFile(), alias)
+			//nolint:gosec // G204: intentional SSH command
+			return exec.Command("ssh", args...)
+		},
+		newSSHExecCommand: func(alias, command string, interactive bool) *exec.Cmd {
+			if interactive {
+				//nolint:gosec // G204: intentional SSH command
+				return exec.Command("ssh", "-t", "-F", sr.GetConfigFile(), alias, command)
+			}
+			args := make([]string, 0, 6)
+			args = append(args, "-F", sr.GetConfigFile(), "-o", "ConnectTimeout=10", alias, command)
 			//nolint:gosec // G204: intentional SSH command
 			return exec.Command("ssh", args...)
 		},
@@ -2061,4 +2072,133 @@ func sshOptionConsumesValue(opt string) bool {
 // GetSSHAgentStatus returns live telemetry on the active SSH agent.
 func (s *serverService) GetSSHAgentStatus() domain.SSHAgentStatus {
 	return QuerySSHAgentStatus()
+}
+
+// GetSnippets retrieves the list of saved command snippets.
+func (s *serverService) GetSnippets() ([]domain.Snippet, error) {
+	return s.serverRepository.GetSnippets()
+}
+
+// SaveSnippet persists a new or updated command snippet.
+func (s *serverService) SaveSnippet(snippet domain.Snippet) error {
+	return s.serverRepository.SaveSnippet(snippet)
+}
+
+// DeleteSnippet removes a snippet by ID.
+func (s *serverService) DeleteSnippet(id string) error {
+	return s.serverRepository.DeleteSnippet(id)
+}
+
+// ExecuteRemoteCommand runs a non-interactive command remotely via SSH and returns combined output.
+func (s *serverService) ExecuteRemoteCommand(alias string, command string) (string, error) {
+	s.logger.Infow("execute remote command", "alias", alias, "command", command)
+	if strings.ContainsAny(alias, "*?") {
+		return "", fmt.Errorf("cannot initiate direct SSH connection to a wildcard pattern block")
+	}
+
+	if err := s.ensureValidCertificate(alias); err != nil {
+		return "", err
+	}
+
+	if err := s.runPreConnectHook(alias); err != nil {
+		return "", err
+	}
+
+	cmdFactory := s.newSSHExecCommand
+	if cmdFactory == nil {
+		cmdFactory = func(a, c string, interactive bool) *exec.Cmd {
+			args := []string{"-F", s.serverRepository.GetConfigFile(), "-o", "ConnectTimeout=10"}
+			if s.getPasswordForServer(a) == "" {
+				args = append(args, "-o", "BatchMode=yes")
+			}
+			args = append(args, a, c)
+			//nolint:gosec // G204: intentional SSH command
+			return exec.Command("ssh", args...)
+		}
+	}
+
+	cmd := cmdFactory(alias, command, false)
+	if cmd == nil {
+		return "", fmt.Errorf("ssh exec command factory returned nil")
+	}
+
+	cmd, err := s.wrapWithSSHPass(alias, cmd)
+	if err != nil {
+		s.logger.Errorw("sshpass wrap failed", "alias", alias, "error", err)
+		return "", err
+	}
+
+	var combinedBuf bytes.Buffer
+	cmd.Stdout = &combinedBuf
+	cmd.Stderr = &combinedBuf
+
+	err = cmd.Run()
+	output := combinedBuf.String()
+	if err != nil {
+		s.logger.Warnw("execute remote command failed", "alias", alias, "error", err, "output", output)
+		return output, err
+	}
+
+	_ = s.serverRepository.RecordSSH(alias)
+	return output, nil
+}
+
+// RunInteractiveRemoteCommand runs a remote command with an interactive pseudo-terminal attached.
+func (s *serverService) RunInteractiveRemoteCommand(alias string, command string) error {
+	s.logger.Infow("interactive remote command start", "alias", alias, "command", command)
+	if strings.ContainsAny(alias, "*?") {
+		return fmt.Errorf("cannot initiate direct SSH connection to a wildcard pattern block")
+	}
+
+	if err := s.ensureValidCertificate(alias); err != nil {
+		return err
+	}
+
+	if err := s.runPreConnectHook(alias); err != nil {
+		return err
+	}
+
+	title := s.formatTerminalTitle(alias)
+	SetTerminalTitle(title)
+	defer RestoreTerminalTitle()
+
+	cmdFactory := s.newSSHExecCommand
+	if cmdFactory == nil {
+		cmdFactory = func(a, c string, interactive bool) *exec.Cmd {
+			//nolint:gosec // G204: intentional SSH command
+			return exec.Command("ssh", "-t", "-F", s.serverRepository.GetConfigFile(), a, c)
+		}
+	}
+
+	cmd := cmdFactory(alias, command, true)
+	if cmd == nil {
+		return fmt.Errorf("ssh exec command factory returned nil")
+	}
+
+	cmd, err := s.wrapWithSSHPass(alias, cmd)
+	if err != nil {
+		s.logger.Errorw("sshpass wrap failed", "alias", alias, "error", err)
+		return err
+	}
+
+	stderrBuf := newLimitedBuffer(2048)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
+
+	if err := cmd.Run(); err != nil {
+		if isRemoteDisconnectError(err, stderrBuf.String()) {
+			s.logger.Infow("interactive command session ended by remote", "alias", alias)
+		} else {
+			s.logger.Errorw("interactive command failed", "alias", alias, "error", err)
+			msg := strings.TrimSpace(stderrBuf.String())
+			if msg != "" {
+				return fmt.Errorf("%s", msg)
+			}
+			return err
+		}
+	}
+
+	_ = s.serverRepository.RecordSSH(alias)
+	return nil
 }

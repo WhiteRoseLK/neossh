@@ -16,6 +16,8 @@ package ssh_config_file
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/WhiteRoseLK/neossh/internal/core/domain"
@@ -29,26 +31,37 @@ type Repository struct {
 	configPath      string
 	fileSystem      FileSystem
 	metadataManager *metadataManager
+	snippetManager  *SnippetManager
 	logger          *zap.SugaredLogger
 }
 
 // NewRepository creates a new SSH config repository.
 func NewRepository(logger *zap.SugaredLogger, configPath, metaDataPath string) ports.ServerRepository {
+	snippetPath := filepath.Join(filepath.Dir(metaDataPath), "snippets.json")
+	if custom := os.Getenv("NEOSSH_SNIPPETS_FILE"); custom != "" {
+		snippetPath = custom
+	}
 	return &Repository{
 		logger:          logger,
 		configPath:      configPath,
 		fileSystem:      DefaultFileSystem{},
 		metadataManager: newMetadataManager(metaDataPath, logger),
+		snippetManager:  NewSnippetManager(snippetPath),
 	}
 }
 
 // NewRepositoryWithFS creates a new SSH config repository with a custom filesystem.
 func NewRepositoryWithFS(logger *zap.SugaredLogger, configPath string, metaDataPath string, fs FileSystem) ports.ServerRepository {
+	snippetPath := filepath.Join(filepath.Dir(metaDataPath), "snippets.json")
+	if custom := os.Getenv("NEOSSH_SNIPPETS_FILE"); custom != "" {
+		snippetPath = custom
+	}
 	return &Repository{
 		logger:          logger,
 		configPath:      configPath,
 		fileSystem:      fs,
 		metadataManager: newMetadataManager(metaDataPath, logger),
+		snippetManager:  NewSnippetManager(snippetPath),
 	}
 }
 
@@ -366,6 +379,27 @@ func (r *Repository) SaveFileManager(tool string) error {
 	}
 	settings.FileManager = tool
 	return r.metadataManager.SaveSettings(settings)
+}
+
+func (r *Repository) GetSnippets() ([]domain.Snippet, error) {
+	if r.snippetManager == nil {
+		r.snippetManager = NewSnippetManager("")
+	}
+	return r.snippetManager.GetSnippets()
+}
+
+func (r *Repository) SaveSnippet(snippet domain.Snippet) error {
+	if r.snippetManager == nil {
+		r.snippetManager = NewSnippetManager("")
+	}
+	return r.snippetManager.SaveSnippet(snippet)
+}
+
+func (r *Repository) DeleteSnippet(id string) error {
+	if r.snippetManager == nil {
+		r.snippetManager = NewSnippetManager("")
+	}
+	return r.snippetManager.DeleteSnippet(id)
 }
 
 // LoadSettings loads application settings from the metadata file at the given path.
