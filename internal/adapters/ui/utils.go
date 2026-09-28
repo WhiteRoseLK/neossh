@@ -23,6 +23,7 @@ import (
 
 	"github.com/WhiteRoseLK/neossh/internal/core/domain"
 	"github.com/mattn/go-runewidth"
+	"github.com/rivo/tview"
 )
 
 // IsForwarding is an optional hook supplied by TUI to indicate active forwarding per alias.
@@ -105,7 +106,15 @@ func stripSimpleColors(s string) string {
 	return result
 }
 
-func formatServerLine(s domain.Server, maxAliasWidth int, width int) (primary, secondary string) {
+func formatServerLine(s domain.Server, maxAliasWidth int, width int, isSelected ...bool) (primary, secondary string) {
+	chk := ""
+	if len(isSelected) > 0 {
+		if isSelected[0] {
+			chk = fmt.Sprintf("[%s::b]%s[-] ", "green", tview.Escape("[✓]"))
+		} else {
+			chk = fmt.Sprintf("[%s]%s[-] ", CurrentTheme.DimText, tview.Escape("[ ]"))
+		}
+	}
 	icon := cellPad(pinnedIcon(s.PinnedAt), 2)
 	// forwarding column after Host/IP
 	fGlyph := ""
@@ -144,8 +153,8 @@ func formatServerLine(s domain.Server, maxAliasWidth int, width int) (primary, s
 	}
 
 	// Use a consistent color for alias; host/IP fixed width; then forwarding column
-	mainText := fmt.Sprintf("%s [%s::b]%s[-] [%s]%-18s[-] %s [%s]Last SSH: %-8s[-]  %s",
-		icon, CurrentTheme.AliasText, paddedAlias, CurrentTheme.MutedText, s.Host,
+	mainText := fmt.Sprintf("%s%s [%s::b]%s[-] [%s]%-18s[-] %s [%s]Last SSH: %-8s[-]  %s",
+		chk, icon, CurrentTheme.AliasText, paddedAlias, CurrentTheme.MutedText, s.Host,
 		fCol, CurrentTheme.DimText, humanizeDuration(s.LastSeen), tagBadges)
 
 	// Format ping status
@@ -175,7 +184,7 @@ func formatServerLine(s domain.Server, maxAliasWidth int, width int) (primary, s
 	}
 
 	if pingIndicator != "" && width > 0 {
-		mainTextLen := runewidth.StringWidth(stripSimpleColors(mainText))
+		mainTextLen := tview.TaggedStringWidth(mainText)
 		indicatorLen := 6 // "● XXXX" is 6 display cells
 		switch {
 		case width > 80:

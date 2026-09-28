@@ -15,10 +15,12 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/WhiteRoseLK/neossh/internal/core/domain"
+	"github.com/rivo/tview"
 )
 
 func TestBuildSSHCommand_PortForwarding(t *testing.T) {
@@ -218,5 +220,18 @@ func TestStripSimpleColors(t *testing.T) {
 	stripped := stripSimpleColors(colored)
 	if stripped != "hello world" {
 		t.Errorf("expected 'hello world', got: %q", stripped)
+	}
+}
+
+func TestTaggedStringWidth_Checkbox(t *testing.T) {
+	checked := fmt.Sprintf("[%s::b]%s[-] ", "green", tview.Escape("[✓]"))
+	unchecked := fmt.Sprintf("[%s]%s[-] ", "gray", tview.Escape("[ ]"))
+	t.Logf("checked: %q width: %d, stripped: %q len: %d", checked, tview.TaggedStringWidth(checked), stripSimpleColors(checked), len(stripSimpleColors(checked)))
+	t.Logf("unchecked: %q width: %d, stripped: %q len: %d", unchecked, tview.TaggedStringWidth(unchecked), stripSimpleColors(unchecked), len(stripSimpleColors(unchecked)))
+	if tview.TaggedStringWidth(checked) != 4 {
+		t.Errorf("expected checked width 4, got %d", tview.TaggedStringWidth(checked))
+	}
+	if tview.TaggedStringWidth(unchecked) != 4 {
+		t.Errorf("expected unchecked width 4, got %d", tview.TaggedStringWidth(unchecked))
 	}
 }
