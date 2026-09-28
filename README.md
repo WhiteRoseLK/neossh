@@ -172,6 +172,53 @@ This project is licensed under the [Apache-2.0 License](LICENSE).
 
 ### Credits & Acknowledgments
 
-- **[Adembc](https://github.com/Adembc)**: Original author and creator of [lazyssh](https://github.com/Adembc/lazyssh). Without his architectural work, `neossh` would not exist.
-- **Community contributors**: Full credit to all contributors from the upstream repository whose ideas and pull requests made this continuation possible:
-  `@DelphicOkami`, `@malaiwah`, `@aabichou`, `@barthofu`, `@omani`, `@yaronuliel`, `@natefabian18`, `@Ferdyverse`, `@Q0`, `@Midas-sudo`, `@Mehrdad-Farshi`, `@leleobhz`, `@eznix86`, `@OleksandrKucherenko`, `@gonsalvesc`, `@levinion`, `@gaoyifan`, `@k161196`, `@shekel588`, `@vtmocanu`, `@davidszp`, `@maxadc`, `@franksl`, `@mahyarmirrashed`, `@vetash`, `@piRGoif`, `@pranav79`, `@mas-kon`, `@0xkatana`, `@arniom`, `@leoncamel`, `@breakersun`, `@OlalalalaO`, `@manato-tajiri`, `@komapro`.
+#### Original Creator
+
+<p align="left">
+  <a href="https://github.com/Adembc" title="Adembc (Original Creator)">
+    <img src="https://github.com/Adembc.png?size=64" width="64" height="64" style="border-radius: 50%; vertical-align: middle; margin-right: 8px;" alt="Adembc" />
+  </a>
+  <b><a href="https://github.com/Adembc">Adembc</a></b> — Creator of <a href="https://github.com/Adembc/lazyssh">lazyssh</a>. All core credit for the foundational idea and architecture belongs to him.
+</p>
+
+#### Upstream & Community Contributors
+
+Full credit to all upstream and community contributors whose ideas, issues, and code made this continuation possible:
+
+<p align="center">
+  <a href="https://github.com/DelphicOkami" title="DelphicOkami"><img src="https://github.com/DelphicOkami.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="DelphicOkami" /></a>
+  <a href="https://github.com/malaiwah" title="malaiwah"><img src="https://github.com/malaiwah.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="malaiwah" /></a>
+  <a href="https://github.com/aabichou" title="aabichou"><img src="https://github.com/aabichou.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="aabichou" /></a>
+  <a href="https://github.com/barthofu" title="barthofu"><img src="https://github.com/barthofu.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="barthofu" /></a>
+  <a href="https://github.com/omani" title="omani"><img src="https://github.com/omani.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="omani" /></a>
+  <a href="https://github.com/yaronuliel" title="yaronuliel"><img src="https://github.com/yaronuliel.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="yaronuliel" /></a>
+  <a href="https://github.com/natefabian18" title="natefabian18"><img src="https://github.com/natefabian18.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="natefabian18" /></a>
+  <a href="https://github.com/Ferdyverse" title="Ferdyverse"><img src="https://github.com/Ferdyverse.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="Ferdyverse" /></a>
+  <a href="https://github.com/Q0" title="Q0"><img src="https://github.com/Q0.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="Q0" /></a>
+  <a href="https://github.com/Midas-sudo" title="Midas-sudo"><img src="https://github.com/Midas-sudo.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="Midas-sudo" /></a>
+  <a href="https://github.com/Mehrdad-Farshi" title="Mehrdad-Farshi"><img src="https://github.com/Mehrdad-Farshi.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="Mehrdad-Farshi" /></a>
+  <a href="https://github.com/leleobhz" title="leleobhz"><img src="https://github.com/leleobhz.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="leleobhz" /></a>
+  <a href="https://github.com/eznix86" title="eznix86"><img src="https://github.com/eznix86.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="eznix86" /></a>
+  <a href="https://github.com/OleksandrKucherenko" title="OleksandrKucherenko"><img src="https://github.com/OleksandrKucherenko.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="OleksandrKucherenko" /></a>
+  <a href="https://github.com/gonsalvesc" title="gonsalvesc"><img src="https://github.com/gonsalvesc.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="gonsalvesc" /></a>
+  <a href="https://github.com/levinion" title="levinion"><img src="https://github.com/levinion.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="levinion" /></a>
+  <a href="https://github.com/gaoyifan" title="gaoyifan"><img src="https://github.com/gaoyifan.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="gaoyifan" /></a>
+  <a href="https://github.com/k161196" title="k161196"><img src="https://github.com/k161196.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="k161196" /></a>
+  <a href="https://github.com/shekel588" title="shekel588"><img src="https://github.com/shekel588.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="shekel588" /></a>
+  <a href="https://github.com/vtmocanu" title="vtmocanu"><img src="https://github.com/vtmocanu.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="vtmocanu" /></a>
+  <a href="https://github.com/davidszp" title="davidszp"><img src="https://github.com/davidszp.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="davidszp" /></a>
+  <a href="https://github.com/maxadc" title="maxadc"><img src="https://github.com/maxadc.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="maxadc" /></a>
+  <a href="https://github.com/franksl" title="franksl"><img src="https://github.com/franksl.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="franksl" /></a>
+  <a href="https://github.com/mahyarmirrashed" title="mahyarmirrashed"><img src="https://github.com/mahyarmirrashed.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="mahyarmirrashed" /></a>
+  <a href="https://github.com/vetash" title="vetash"><img src="https://github.com/vetash.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="vetash" /></a>
+  <a href="https://github.com/piRGoif" title="piRGoif"><img src="https://github.com/piRGoif.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="piRGoif" /></a>
+  <a href="https://github.com/pranav79" title="pranav79"><img src="https://github.com/pranav79.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="pranav79" /></a>
+  <a href="https://github.com/mas-kon" title="mas-kon"><img src="https://github.com/mas-kon.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="mas-kon" /></a>
+  <a href="https://github.com/0xkatana" title="0xkatana"><img src="https://github.com/0xkatana.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="0xkatana" /></a>
+  <a href="https://github.com/arniom" title="arniom"><img src="https://github.com/arniom.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="arniom" /></a>
+  <a href="https://github.com/leoncamel" title="leoncamel"><img src="https://github.com/leoncamel.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="leoncamel" /></a>
+  <a href="https://github.com/breakersun" title="breakersun"><img src="https://github.com/breakersun.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="breakersun" /></a>
+  <a href="https://github.com/OlalalalaO" title="OlalalalaO"><img src="https://github.com/OlalalalaO.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="OlalalalaO" /></a>
+  <a href="https://github.com/manato-tajiri" title="manato-tajiri"><img src="https://github.com/manato-tajiri.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="manato-tajiri" /></a>
+  <a href="https://github.com/komapro" title="komapro"><img src="https://github.com/komapro.png?size=48" width="48" height="48" style="border-radius: 50%; margin: 3px;" alt="komapro" /></a>
+</p>
