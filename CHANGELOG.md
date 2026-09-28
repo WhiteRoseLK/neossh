@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/) and is automated with [Release Please](https://github.com/googleapis/release-please).
 
+## [2.2.0](https://github.com/WhiteRoseLK/neossh/compare/v2.1.0...v2.2.0) (2026-09-28)
+
+
+### Features
+
+* enhance ssh error diagnostics, remote disconnections, and custom keybindings ([#129](https://github.com/WhiteRoseLK/neossh/issues/129)) ([3625c69](https://github.com/WhiteRoseLK/neossh/commit/3625c699badecdab3b5a3560009f9bba70447811))
+
+
+### Documentation
+
+* add mkdocs documentation site and community standards ([#121](https://github.com/WhiteRoseLK/neossh/issues/121)) ([78f8739](https://github.com/WhiteRoseLK/neossh/commit/78f8739746f9448b3e5f32d1da95ac43d4376120))
+* correct gollum link syntax to DisplayText|PageName ([#126](https://github.com/WhiteRoseLK/neossh/issues/126)) ([2fcef3c](https://github.com/WhiteRoseLK/neossh/commit/2fcef3c22900b1e594080e6984f67239d95ea2c6))
+* decouple documentation from github pages and whiterose domain ([#123](https://github.com/WhiteRoseLK/neossh/issues/123)) ([13db18d](https://github.com/WhiteRoseLK/neossh/commit/13db18d8ba272565416dda06abeb5aa66ab890d0))
+* fix malformed tags and formatting across all wiki pages ([#127](https://github.com/WhiteRoseLK/neossh/issues/127)) ([75f7d1f](https://github.com/WhiteRoseLK/neossh/commit/75f7d1f55a2568f8d1b54080f3f5d40a21026624))
+* migrate documentation to github wiki ([#124](https://github.com/WhiteRoseLK/neossh/issues/124)) ([478a2ad](https://github.com/WhiteRoseLK/neossh/commit/478a2adeec95092d0893c92156643acc69c4dbfe))
+* remove photo of original creator in readme ([#128](https://github.com/WhiteRoseLK/neossh/issues/128)) ([eadc2fc](https://github.com/WhiteRoseLK/neossh/commit/eadc2fca05b8895271e14f8cb474dc318956fa17))
+* simplify readme to focus on essentials and link to wiki ([#125](https://github.com/WhiteRoseLK/neossh/issues/125)) ([89900bd](https://github.com/WhiteRoseLK/neossh/commit/89900bded431b25c0964530b680eed30599a1350))
+
+
+### Continuous Integration & Tooling
+
+* **deps:** bump actions/github-script from 7 to 9 ([f6c6d1d](https://github.com/WhiteRoseLK/neossh/commit/f6c6d1dddcc93a46d6bfb56e1486b6422cd8de66))
+* **deps:** bump actions/setup-go from 5 to 7 ([c9689cc](https://github.com/WhiteRoseLK/neossh/commit/c9689cccd2da8a93498d9ea617639c814a98264b))
+* **deps:** bump goreleaser/goreleaser-action from 5 to 7 ([#118](https://github.com/WhiteRoseLK/neossh/issues/118)) ([3fdd605](https://github.com/WhiteRoseLK/neossh/commit/3fdd605d5329f4de4102de6f4f69cd2a3c8f821c))
+
 ## [2.1.0](https://github.com/WhiteRoseLK/neossh/compare/v2.0.0...v2.1.0) (2026-09-27)
 
 
