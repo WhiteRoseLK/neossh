@@ -863,6 +863,10 @@ func (t *tui) handleReturnToSearch() {
 }
 
 func (t *tui) handleServerConnect() {
+	if t.serverList != nil && t.serverList.GetMultiSelectionCount() > 1 && !t.isActiveListFocused() {
+		t.handleMultiSessionDashboard()
+		return
+	}
 	var server domain.Server
 	var ok bool
 	if t.isActiveListFocused() {
@@ -2529,6 +2533,41 @@ func (t *tui) handleSnippetsModal() {
 			t.app.Suspend(func() {
 				if err := t.serverService.RunInteractiveRemoteCommand(alias, cmd); err != nil {
 					t.showStatusTempColor("Command failed: "+err.Error(), "#FF6B6B")
+				}
+			})
+			t.returnToMain()
+		},
+	)
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
+}
+
+func (t *tui) handleMultiSessionDashboard() {
+	var targets []domain.Server
+	if t.serverList != nil {
+		targets = t.serverList.GetTargetServers()
+	}
+	if len(targets) == 0 {
+		return
+	}
+
+	modal := NewMultiSessionModal(
+		t.app,
+		t.serverService,
+		targets,
+		"",
+		func() {
+			t.handleModalClose()
+		},
+		func(msg, color string) {
+			t.showStatusTempColor(msg, color)
+		},
+		func(alias, cmd string) {
+			t.app.Suspend(func() {
+				if cmd == "" {
+					_ = t.serverService.SSH(alias)
+				} else {
+					_ = t.serverService.RunInteractiveRemoteCommand(alias, cmd)
 				}
 			})
 			t.returnToMain()
