@@ -42,4 +42,7 @@ type ServerRepository interface {
 	SaveDefaultIdentityKey(key string) error
 	GetFileManager() (string, error)
 	SaveFileManager(tool string) error
+	GetSnippets() ([]domain.Snippet, error)
+	SaveSnippet(snippet domain.Snippet) error
+	DeleteSnippet(id string) error
 }

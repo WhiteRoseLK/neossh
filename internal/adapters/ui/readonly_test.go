@@ -161,6 +161,14 @@ func (m *mockReadOnlyService) GetSSHAgentStatus() domain.SSHAgentStatus {
 	return domain.SSHAgentStatus{Available: true, KeyCount: 2, Type: domain.AgentTypeOpenSSH}
 }
 
+func (m *mockReadOnlyService) GetSnippets() ([]domain.Snippet, error) { return nil, nil }
+func (m *mockReadOnlyService) SaveSnippet(domain.Snippet) error       { return nil }
+func (m *mockReadOnlyService) DeleteSnippet(string) error             { return nil }
+func (m *mockReadOnlyService) ExecuteRemoteCommand(string, string) (string, error) {
+	return "", nil
+}
+func (m *mockReadOnlyService) RunInteractiveRemoteCommand(string, string) error { return nil }
+
 func TestTUI_ReadOnlyState(t *testing.T) {
 	logger := zap.NewNop().Sugar()
 	mockSvc := &mockReadOnlyService{}

@@ -33,10 +33,36 @@ import (
 type mockServerRepository struct {
 	ports.ServerRepository
 	servers     []domain.Server
+	snippets    []domain.Snippet
 	recordCalls int
 	lastAlias   string
 	recordErr   error
 	defaultKey  string
+}
+
+func (m *mockServerRepository) GetSnippets() ([]domain.Snippet, error) {
+	return m.snippets, nil
+}
+
+func (m *mockServerRepository) SaveSnippet(s domain.Snippet) error {
+	for i, existing := range m.snippets {
+		if existing.ID == s.ID {
+			m.snippets[i] = s
+			return nil
+		}
+	}
+	m.snippets = append(m.snippets, s)
+	return nil
+}
+
+func (m *mockServerRepository) DeleteSnippet(id string) error {
+	for i, s := range m.snippets {
+		if s.ID == id {
+			m.snippets = append(m.snippets[:i], m.snippets[i+1:]...)
+			return nil
+		}
+	}
+	return nil
 }
 
 func (m *mockServerRepository) ListServers(string) ([]domain.Server, error) {
@@ -332,6 +358,12 @@ func TestHelperProcess(t *testing.T) {
 				os.Exit(255)
 			case "success":
 				os.Exit(0)
+			case "exec-echo":
+				_, _ = os.Stdout.WriteString("Linux srv1 5.15.0-generic\n")
+				os.Exit(0)
+			case "exec-fail":
+				_, _ = os.Stderr.WriteString("bash: command not found: foobar\n")
+				os.Exit(127)
 			case "hook-fail":
 				_, _ = os.Stderr.WriteString("hook error: connection refused\n")
 				os.Exit(1)
@@ -1250,5 +1282,150 @@ func TestServerService_InMemoryStateAndPings(t *testing.T) {
 	afterAdd, _ := svc.ListServers("")
 	if len(afterAdd) != 5 {
 		t.Fatalf("expected 5 servers after AddServer, got %d", len(afterAdd))
+	}
+}
+
+func TestServerServiceSnippets(t *testing.T) {
+	repo := &mockServerRepository{}
+	svc := &serverService{
+		logger:           zap.NewNop().Sugar(),
+		serverRepository: repo,
+	}
+
+	snippets, err := svc.GetSnippets()
+	if err != nil {
+		t.Fatalf("unexpected error getting snippets: %v", err)
+	}
+	if len(snippets) != 0 {
+		t.Fatalf("expected 0 snippets, got %d", len(snippets))
+	}
+
+	s1 := domain.Snippet{
+		ID:          "s1",
+		Name:        "Uptime",
+		Command:     "uptime",
+		Description: "Check uptime",
+	}
+	if err := svc.SaveSnippet(s1); err != nil {
+		t.Fatalf("SaveSnippet failed: %v", err)
+	}
+
+	snippets, _ = svc.GetSnippets()
+	if len(snippets) != 1 || snippets[0].Name != "Uptime" {
+		t.Fatalf("expected 1 snippet with name 'Uptime', got %+v", snippets)
+	}
+
+	if err := svc.DeleteSnippet("s1"); err != nil {
+		t.Fatalf("DeleteSnippet failed: %v", err)
+	}
+
+	snippets, _ = svc.GetSnippets()
+	if len(snippets) != 0 {
+		t.Fatalf("expected 0 snippets after delete, got %d", len(snippets))
+	}
+}
+
+func TestServerServiceExecuteRemoteCommand(t *testing.T) {
+	repo := &mockServerRepository{}
+	svc := &serverService{
+		logger:           zap.NewNop().Sugar(),
+		serverRepository: repo,
+	}
+
+	// 1. Wildcard validation
+	_, err := svc.ExecuteRemoteCommand("prod-*", "uptime")
+	if err == nil {
+		t.Fatal("expected error on wildcard alias, got nil")
+	}
+
+	// 2. Successful command execution
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		cs := []string{"-test.run=TestHelperProcess", "--", "exec-echo", alias}
+		cmd := exec.Command(os.Args[0], cs...)
+		cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+		return cmd
+	}
+
+	out, err := svc.ExecuteRemoteCommand("srv1", "uname -a")
+	if err != nil {
+		t.Fatalf("expected nil error on exec success, got %v", err)
+	}
+	if !strings.Contains(out, "Linux srv1") {
+		t.Fatalf("expected output to contain 'Linux srv1', got %q", out)
+	}
+	if repo.recordCalls != 1 || repo.lastAlias != "srv1" {
+		t.Fatalf("expected RecordSSH called for srv1, got %d calls, alias %s", repo.recordCalls, repo.lastAlias)
+	}
+
+	// 3. Failed command execution
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		cs := []string{"-test.run=TestHelperProcess", "--", "exec-fail", alias}
+		cmd := exec.Command(os.Args[0], cs...)
+		cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+		return cmd
+	}
+
+	outFail, err := svc.ExecuteRemoteCommand("srv1", "foobar")
+	if err == nil {
+		t.Fatal("expected error on failing command, got nil")
+	}
+	if !strings.Contains(outFail, "command not found") {
+		t.Fatalf("expected failure output to contain 'command not found', got %q", outFail)
+	}
+
+	// 4. Factory returns nil
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		return nil
+	}
+	_, err = svc.ExecuteRemoteCommand("srv1", "uptime")
+	if err == nil {
+		t.Fatal("expected error when exec factory returns nil, got nil")
+	}
+}
+
+func TestServerServiceRunInteractiveRemoteCommand(t *testing.T) {
+	repo := &mockServerRepository{}
+	svc := &serverService{
+		logger:           zap.NewNop().Sugar(),
+		serverRepository: repo,
+	}
+
+	// 1. Wildcard validation
+	if err := svc.RunInteractiveRemoteCommand("server?", "htop"); err == nil {
+		t.Fatal("expected error on wildcard alias, got nil")
+	}
+
+	// 2. Success execution
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		cs := []string{"-test.run=TestHelperProcess", "--", "success", alias}
+		cmd := exec.Command(os.Args[0], cs...)
+		cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+		return cmd
+	}
+
+	if err := svc.RunInteractiveRemoteCommand("srv1", "htop"); err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+
+	// 3. Remote disconnect
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		cs := []string{"-test.run=TestHelperProcess", "--", "remote", alias}
+		cmd := exec.Command(os.Args[0], cs...)
+		cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+		return cmd
+	}
+	if err := svc.RunInteractiveRemoteCommand("srv1", "htop"); err != nil {
+		t.Fatalf("expected nil error on remote disconnect, got %v", err)
+	}
+
+	// 4. Command failure
+	svc.newSSHExecCommand = func(alias, command string, interactive bool) *exec.Cmd {
+		cs := []string{"-test.run=TestHelperProcess", "--", "refused", alias}
+		cmd := exec.Command(os.Args[0], cs...)
+		cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+		return cmd
+	}
+	if err := svc.RunInteractiveRemoteCommand("srv1", "htop"); err == nil {
+		t.Fatal("expected error on refused connection, got nil")
 	}
 }

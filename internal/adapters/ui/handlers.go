@@ -331,6 +331,9 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 	case 'I':
 		t.handleKnownHostsManager()
 		return true
+	case 'X':
+		t.handleSnippetsModal()
+		return true
 	case 'T':
 		t.handleThemeToggle()
 		return true
@@ -2502,6 +2505,35 @@ func (t *tui) handleAgentInspector() {
 	}, func(msg, color string) {
 		t.showStatusTempColor(msg, color)
 	})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
+}
+
+func (t *tui) handleSnippetsModal() {
+	var targets []domain.Server
+	if t.serverList != nil {
+		targets = t.serverList.GetTargetServers()
+	}
+
+	modal := NewSnippetsModal(
+		t.app,
+		t.serverService,
+		targets,
+		func() {
+			t.handleModalClose()
+		},
+		func(msg, color string) {
+			t.showStatusTempColor(msg, color)
+		},
+		func(alias, cmd string) {
+			t.app.Suspend(func() {
+				if err := t.serverService.RunInteractiveRemoteCommand(alias, cmd); err != nil {
+					t.showStatusTempColor("Command failed: "+err.Error(), "#FF6B6B")
+				}
+			})
+			t.returnToMain()
+		},
+	)
 	t.app.SetRoot(modal, true)
 	t.app.SetFocus(modal)
 }

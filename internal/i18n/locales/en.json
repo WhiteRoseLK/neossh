@@ -12,8 +12,8 @@
   "search.title": " 0 Search (/ to filter, Esc to blur) ",
   "search.placeholder": "e.g. prod, tag:aws, user:root, status:up",
 
-  "statusbar.readonly": "[yellow::b]READONLY MODE[::-] (Modifications locked) • [white]Space[-] Select • [white]Tab[-] Switch panel • [white]Enter[-] Connect • [white]c[-] Copy • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]T[-] Theme • [white]q[-] Quit",
-  "statusbar.normal": "[white]Space[-] Select • [white]Tab[-] Switch panel • [white]Enter[-] Connect • [white]a[-] Add • [white]e[-] Edit • [white]d[-] Delete • [white]c[-] Copy • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]C[-] Comment • [white]l/u[-] Agent • [white]T[-] Theme • [white]q[-] Quit",
+  "statusbar.readonly": "[yellow::b]READONLY MODE[::-] (Modifications locked) • [white]Space[-] Select • [white]Tab[-] Switch panel • [white]Enter[-] Connect • [white]c[-] Copy • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]X[-] Snippets • [white]T[-] Theme • [white]q[-] Quit",
+  "statusbar.normal": "[white]Space[-] Select • [white]Tab[-] Switch panel • [white]Enter[-] Connect • [white]a[-] Add • [white]e[-] Edit • [white]d[-] Delete • [white]c[-] Copy • [white]o[-] SCP • [white]g/G/W[-] Ping • [white]P[-] Git SSH • [white]C[-] Comment • [white]X[-] Snippets • [white]l/u[-] Agent • [white]T[-] Theme • [white]q[-] Quit",
 
   "details.title": " Details ",
   "details.label.basic": "Basic Settings:",

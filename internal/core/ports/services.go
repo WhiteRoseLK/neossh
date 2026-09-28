@@ -52,6 +52,11 @@ type ServerService interface {
 	ReloadServers() error
 	UpdateServerPing(alias string, status string, latency time.Duration)
 	GetSSHAgentStatus() domain.SSHAgentStatus
+	GetSnippets() ([]domain.Snippet, error)
+	SaveSnippet(snippet domain.Snippet) error
+	DeleteSnippet(id string) error
+	ExecuteRemoteCommand(alias string, command string) (string, error)
+	RunInteractiveRemoteCommand(alias string, command string) error
 }
 
 // GitService provides Git and SSH key management operations.

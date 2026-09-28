@@ -67,6 +67,9 @@ func (m *mockServerRepo) GetDefaultIdentityKey() (string, error) { return "", ni
 func (m *mockServerRepo) SaveDefaultIdentityKey(_ string) error  { return nil }
 func (m *mockServerRepo) GetFileManager() (string, error)        { return "", nil }
 func (m *mockServerRepo) SaveFileManager(_ string) error         { return nil }
+func (m *mockServerRepo) GetSnippets() ([]domain.Snippet, error) { return nil, nil }
+func (m *mockServerRepo) SaveSnippet(_ domain.Snippet) error     { return nil }
+func (m *mockServerRepo) DeleteSnippet(_ string) error           { return nil }
 
 func TestGitService_IsGitRepository(t *testing.T) {
 	logger := zap.NewNop().Sugar()

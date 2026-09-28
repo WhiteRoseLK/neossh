@@ -31,8 +31,8 @@ func DefaultStatusText() string {
 			"[%s]c[-] Copy SSH  • [%s]o[-] SCP  • [%s]M[-] SSHFS  • [%s]v[-] Paste SSH  • [%s]y[-] Clone  • "+
 			"[%s]h[-] Copy Host  • [%s]m[-] Hide  • [%s]H[-] Toggle Hidden  • [%s]a[-] Add  • [%s]e[-] Edit  • "+
 			"[%s]g/G/W[-] Ping (All/Watch)  • [%s]K[-] Install Key  • [%s]d[-] Delete  • [%s]p[-] Pin/Unpin  • "+
-			"[%s]P[-] Git SSH  • [%s]C[-] Comment  • [%s]T[-] Theme  • [%s]i[-] Import  • [%s]/[-] Search  • [%s]q[-] Quit",
-		k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k)
+			"[%s]P[-] Git SSH  • [%s]C[-] Comment  • [%s]X[-] Snippets  • [%s]T[-] Theme  • [%s]i[-] Import  • [%s]/[-] Search  • [%s]q[-] Quit",
+		k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k)
 }
 
 func ReadonlyStatusText() string {
@@ -43,9 +43,9 @@ func ReadonlyStatusText() string {
 	return fmt.Sprintf(
 		"[%s]Tab[-] Panels  • [%s]↑↓[-] Navigate  • [%s]Space[-] Select  • [%s]Enter[-] SSH  • [%s]F[-] SFTP  • [%s]f[-] Forward  • [%s]x[-] Stop Forward  • "+
 			"[%s]c[-] Copy SSH  • [%s]o[-] SCP  • [%s]M[-] SSHFS  • [%s]h[-] Copy Host  • [%s]H[-] Toggle Hidden  • "+
-			"[%s]g/G/W[-] Ping (All/Watch)  • [%s]p[-] Pin/Unpin  • [%s]P[-] Git SSH  • [%s]T[-] Theme  • [%s]/[-] Search  • "+
+			"[%s]g/G/W[-] Ping (All/Watch)  • [%s]p[-] Pin/Unpin  • [%s]P[-] Git SSH  • [%s]X[-] Snippets  • [%s]T[-] Theme  • [%s]/[-] Search  • "+
 			"[%s]q[-] Quit  • [red::b][READONLY][-]",
-		k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k)
+		k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k, k)
 }
 
 func StatusText(readonly bool) string {

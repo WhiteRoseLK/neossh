@@ -117,6 +117,9 @@ func (m *mockServerRepoForUI) GetDefaultIdentityKey() (string, error) { return "
 func (m *mockServerRepoForUI) SaveDefaultIdentityKey(_ string) error  { return nil }
 func (m *mockServerRepoForUI) GetFileManager() (string, error)        { return "", nil }
 func (m *mockServerRepoForUI) SaveFileManager(_ string) error         { return nil }
+func (m *mockServerRepoForUI) GetSnippets() ([]domain.Snippet, error) { return nil, nil }
+func (m *mockServerRepoForUI) SaveSnippet(_ domain.Snippet) error     { return nil }
+func (m *mockServerRepoForUI) DeleteSnippet(_ string) error           { return nil }
 
 func TestEditKeyComment(t *testing.T) {
 	app := tview.NewApplication()
