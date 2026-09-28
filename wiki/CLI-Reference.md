@@ -1,4 +1,4 @@
-#  Command Line Usage
+# Command Line Usage
 
 `neossh` provides an extensive set of command-line flags and subcommands for scripting, automation, direct connection, and headless operations.
 

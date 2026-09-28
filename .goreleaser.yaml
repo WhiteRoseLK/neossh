@@ -88,8 +88,12 @@ changelog:
 release:
   mode: keep-existing
   replace_existing_artifacts: true
-  footer: >-
-    
+  footer: |
+    {{- if .PreviousTag }}
+
+    **Full Changelog**: https://github.com/WhiteRoseLK/neossh/compare/{{ .PreviousTag }}...{{ .Tag }}
+    {{- end }}
+
     ---
-    
+
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

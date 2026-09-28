@@ -1,4 +1,4 @@
-#  Password Authentication via `sshpass`
+# Password Authentication via `sshpass`
 
 For legacy servers or restricted environments that do not support SSH public key authentication, `neossh` provides automated password delivery via `sshpass` with end-to-end credential security.
 
@@ -13,7 +13,7 @@ For legacy servers or restricted environments that do not support SSH public key
 
 > [!WARNING]
 > **Security Best Practice**
-    Whenever possible, prefer SSH public key authentication or SSH certificates over password authentication. Password delivery via `sshpass` should primarily be used for legacy appliances, embedded devices, or temporary environments where key provisioning is restricted.
+> Whenever possible, prefer SSH public key authentication or SSH certificates over password authentication. Password delivery via `sshpass` should primarily be used for legacy appliances, embedded devices, or temporary environments where key provisioning is restricted.
 
 ---
 

@@ -1,10 +1,10 @@
-#  SSHFS Remote Mounts
+# SSHFS Remote Mounts
 
 Mount remote server filesystems locally over SSH using SSHFS.
 
 ## TUI Usage
 
-Press ++shift+m++ to open the SSHFS command generator modal. It generates ready-to-run mount and unmount commands with full SSH configuration:
+Press <kbd>Shift+M</kbd> to open the SSHFS command generator modal. It generates ready-to-run mount and unmount commands with full SSH configuration:
 
 - **Ports** and **identity files**
 - **Jump proxies** (`ProxyJump`)

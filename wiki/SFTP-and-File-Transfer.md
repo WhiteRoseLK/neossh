@@ -1,13 +1,13 @@
-#  SFTP & File Transfer
+# SFTP & File Transfer
 
 ## Built-in Dual-Pane SFTP Manager
 
-Press ++ctrl+f<kbd> (or </kbd>shift+f<kbd> to use the configured file manager) to open the interactive dual-pane file manager:
+Press <kbd>Ctrl+F</kbd> (or <kbd>Shift+F</kbd> to use the configured file manager) to open the interactive dual-pane file manager:
 
 - **WinSCP / FileZilla style** with local (left) and remote (right) panels
 - Directory navigation with arrow keys
-- Sort by name, size, or date with </kbd>s<kbd>
-- Upload files with </kbd>u<kbd>, download with </kbd>d<kbd>
+- Sort by name, size, or date with <kbd>s</kbd>
+- Upload files with <kbd>u</kbd>, download with <kbd>d</kbd>
 - Real-time streaming transfer progress indicators
 - Overwrite confirmation dialogs
 
@@ -72,12 +72,12 @@ Example custom template:
 
 | Key | Action |
 |:---:|--------|
-| </kbd>shift+f<kbd> | Launch configured file manager (external or internal) |
-| </kbd>ctrl+f++ | Open built-in dual-pane SFTP manager directly |
+| <kbd>Shift+F</kbd> | Launch configured file manager (external or internal) |
+| <kbd>Ctrl+F</kbd> | Open built-in dual-pane SFTP manager directly |
 
 > [!TIP]
 > **Terminal vs GUI tools**
-    Terminal tools (sftp, yazi, ranger) suspend the TUI during use. GUI tools (filezilla, cyberduck, nautilus, dolphin) launch in the background while the TUI stays active.
+> Terminal tools (sftp, yazi, ranger) suspend the TUI during use. GUI tools (filezilla, cyberduck, nautilus, dolphin) launch in the background while the TUI stays active.
 
 ## Protocol URLs
 

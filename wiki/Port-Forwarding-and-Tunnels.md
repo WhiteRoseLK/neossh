@@ -1,4 +1,4 @@
-#  Port Forwarding & Tunnels
+# Port Forwarding & Tunnels
 
 ## Interactive Tunnel Assistant
 
@@ -14,7 +14,7 @@ Local port 3306 → remote-db:3306 via ssh-server
 
 > [!NOTE]
 > **Example: Access a remote database locally**
-    Forward local port `3306` to `localhost:3306` on the remote server, then connect with `mysql -h 127.0.0.1 -P 3306`.
+> Forward local port `3306` to `localhost:3306` on the remote server, then connect with `mysql -h 127.0.0.1 -P 3306`.
 
 ### Remote Forwarding (`-R`)
 

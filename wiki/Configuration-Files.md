@@ -1,4 +1,4 @@
-#  Configuration Files Reference
+# Configuration Files Reference
 
 `neossh` is designed around standard OpenSSH configurations while managing auxiliary state (stats, preferences, secrets) in dedicated, cleanly separated files.
 
