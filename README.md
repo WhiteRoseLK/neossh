@@ -170,12 +170,7 @@ This project is licensed under the [Apache-2.0 License](LICENSE).
 
 #### Original Creator
 
-<p align="left">
-  <a href="https://github.com/Adembc" title="Adembc (Original Creator)">
-    <img src="https://github.com/Adembc.png?size=64" width="64" height="64" style="border-radius: 50%; vertical-align: middle; margin-right: 8px;" alt="Adembc" />
-  </a>
-  <b><a href="https://github.com/Adembc">Adembc</a></b> — Creator of <a href="https://github.com/Adembc/lazyssh">lazyssh</a>. All core credit for the foundational idea and architecture belongs to him.
-</p>
+- **[Adembc](https://github.com/Adembc)** — Creator of [lazyssh](https://github.com/Adembc/lazyssh). All core credit for the foundational idea and architecture belongs to him.
 
 #### Upstream & Community Contributors
 
