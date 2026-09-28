@@ -73,6 +73,11 @@ Select multiple servers in the main server list to perform operations in bulk:
 - **Status Counter**: A dynamic badge in the status bar displays the count of selected servers (e.g. `[3 servers selected]`).
 - **Bulk Ping**: Press <kbd>Shift+G</kbd> to ping only the selected servers concurrently (falls back to pinging all servers when none are selected).
 - **Bulk Tagging**: Press <kbd>t</kbd> when multiple servers are selected to open the bulk tag modal and add/remove tags across all selected servers simultaneously.
+- **Multi-Session Engine & Tabs**: Press <kbd>Enter</kbd> when multiple servers are selected (or run command snippets via <kbd>X</kbd>) to open the interactive Multi-Session Dashboard:
+  - **Tab 0 (Overview Dashboard)**: Aggregated status table with real-time execution progress (`⏳ Running`, `✓ Success`, `✗ Failed`), durations, and output summaries.
+  - **Interactive Drill-Down**: Press <kbd>Enter</kbd> on any single server row to jump immediately to its dedicated session tab with scrollable output and live interactive shell capability (<kbd>i</kbd>).
+  - **Split View Tab**: Check 2 to 4 servers with <kbd>Space</kbd> and press <kbd>Enter</kbd> to open a multi-pane split view (side-by-side or 2x2 grid) with <kbd>Tab</kbd> navigation.
+  - **Tab Navigation**: Jump directly to tabs using <kbd>Alt+0</kbd> (Dashboard) and <kbd>Alt+1..9</kbd> (individual session tabs).
 
 ## Multi-Alias Support
 

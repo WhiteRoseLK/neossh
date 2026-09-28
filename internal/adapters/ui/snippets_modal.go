@@ -390,8 +390,8 @@ func (m *SnippetsModal) executeCommand(command string, interactive bool) {
 		return
 	}
 
-	// Non-interactive runner modal
-	runner := NewSnippetOutputModal(
+	// Multi-session runner modal with Dashboard and Tabs
+	runner := NewMultiSessionModal(
 		m.app,
 		m.service,
 		m.targetServers,
@@ -401,6 +401,7 @@ func (m *SnippetsModal) executeCommand(command string, interactive bool) {
 			m.app.SetFocus(m.table)
 		},
 		m.onStatus,
+		m.onInteractiveRun,
 	)
 
 	m.app.SetRoot(runner, true)
