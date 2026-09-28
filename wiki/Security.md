@@ -1,8 +1,4 @@
----
-title: Security
----
-
-# :material-shield-lock: Security
+#  Security
 
 neossh treats credential security and user privacy as paramount requirements.
 
@@ -46,7 +42,8 @@ When using `neossh export`, the following items are **never** included in bundle
 | `vault.json` | Contains encrypted passwords |
 | OS keyring contents | Platform-specific, non-portable |
 
-!!! tip "Sanitized exports for teams"
+> [!TIP]
+> **Sanitized exports for teams**
     Use `neossh export --sanitize` to additionally strip `IdentityFile` paths and sensitive comments (`# password:`, `# token:`) from the bundle, making it safe for team distribution.
 
 ## Config Safety: Non-destructive Writes

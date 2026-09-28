@@ -1,8 +1,4 @@
----
-title: SSHFS Remote Mounts
----
-
-# :material-harddisk: SSHFS Remote Mounts
+#  SSHFS Remote Mounts
 
 Mount remote server filesystems locally over SSH using SSHFS.
 
@@ -43,19 +39,19 @@ umount /local/mountpoint          # macOS
 
 SSHFS must be installed on your system:
 
-=== "macOS"
+### macOS
 
     ```bash
     brew install macfuse sshfs
     ```
 
-=== "Linux (Debian/Ubuntu)"
+### Linux (Debian/Ubuntu)
 
     ```bash
     sudo apt install sshfs
     ```
 
-=== "Linux (Arch)"
+### Linux (Arch)
 
     ```bash
     sudo pacman -S sshfs

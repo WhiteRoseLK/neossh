@@ -1,8 +1,4 @@
----
-title: SSH Certificates
----
-
-# :material-certificate: SSH Certificates & Auto-Renewal
+#  SSH Certificates & Auto-Renewal
 
 `neossh` provides first-class support for OpenSSH short-lived certificates, addressing the modern enterprise paradigm of ephemeral credentials (Smallstep, HashiCorp Vault, Teleport, Okta, etc.).
 
@@ -14,13 +10,13 @@ title: SSH Certificates
 
 ### Status Badges in Server Details
 
-When inspecting a server in the **Details** panel (++3++), `neossh` parses the certificate headers and displays live information:
+When inspecting a server in the **Details** panel (<kbd>3</kbd>), `neossh` parses the certificate headers and displays live information:
 
 | Status Badge | Meaning |
 |---|---|
-| :material-check-circle:{ .green } `✓ Valid` | Certificate is currently active and within its valid time window. |
-| :material-alert:{ .amber } `⚠ Expiring soon` | Certificate is approaching expiration (proportional threshold). |
-| :material-close-circle:{ .red } `✗ Expired` | Certificate validity period has ended. Connection may fail. |
+|  `✓ Valid` | Certificate is currently active and within its valid time window. |
+|  `⚠ Expiring soon` | Certificate is approaching expiration (proportional threshold). |
+|  `✗ Expired` | Certificate validity period has ended. Connection may fail. |
 
 Additional details displayed:
 - **Remaining Lifetime**: Exact time left before expiration (e.g., `42m remaining`, `5d remaining`).
@@ -42,7 +38,7 @@ Eliminate repeated manual MFA/OIDC logins with smart, on-demand certificate rene
 
 ### How It Works
 
-1. When you initiate an SSH connection (++enter++ or `-c`), `neossh` checks whether a certificate renewal command is configured for the host.
+1. When you initiate an SSH connection (<kbd>enter</kbd> or `-c`), `neossh` checks whether a certificate renewal command is configured for the host.
 2. **If the certificate is still valid**, `neossh` skips renewal completely and connects immediately with zero latency.
 3. **If the certificate is missing, expired, or expiring soon**, `neossh` executes the renewal command once.
 4. `neossh` verifies on disk that a valid certificate was produced, and then proceeds with the SSH connection.
@@ -96,7 +92,7 @@ Supported comment prefixes:
 
 ### Via the TUI
 
-1. Highlight the server and press ++e++ to edit.
+1. Highlight the server and press <kbd>e</kbd> to edit.
 2. Navigate to the **Advanced** or **Certificates** section.
 3. Enter your renewal command in the **Certificate Renewal Command** input field.
 4. Save the form. `neossh` updates the SSH configuration comment automatically.

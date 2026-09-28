@@ -1,8 +1,4 @@
----
-title: Password Authentication
----
-
-# :material-form-textbox-password: Password Authentication via `sshpass`
+#  Password Authentication via `sshpass`
 
 For legacy servers or restricted environments that do not support SSH public key authentication, `neossh` provides automated password delivery via `sshpass` with end-to-end credential security.
 
@@ -15,7 +11,8 @@ For legacy servers or restricted environments that do not support SSH public key
 - **Secure Process Invocation**: Uses `sshpass -e` with environment variable delivery (`SSHPASS`) rather than command-line arguments, completely eliminating visibility in system process tables (`ps aux`).
 - **Strict File Permissions**: Config snapshots, backups, and vault files strictly enforce `0600` permissions.
 
-!!! warning "Security Best Practice"
+> [!WARNING]
+> **Security Best Practice**
     Whenever possible, prefer SSH public key authentication or SSH certificates over password authentication. Password delivery via `sshpass` should primarily be used for legacy appliances, embedded devices, or temporary environments where key provisioning is restricted.
 
 ---
@@ -24,26 +21,26 @@ For legacy servers or restricted environments that do not support SSH public key
 
 To use automated password authentication, `sshpass` must be installed on your system:
 
-=== "macOS"
+### macOS
 
     ```bash
     # Via Homebrew (community tap or source)
     brew install esolitos/ipa/sshpass
     ```
 
-=== "Ubuntu / Debian"
+### Ubuntu / Debian
 
     ```bash
     sudo apt-get update && sudo apt-get install -y sshpass
     ```
 
-=== "Arch Linux"
+### Arch Linux
 
     ```bash
     sudo pacman -S sshpass
     ```
 
-=== "Fedora / RHEL"
+### Fedora / RHEL
 
     ```bash
     sudo dnf install -y sshpass
@@ -53,7 +50,7 @@ To use automated password authentication, `sshpass` must be installed on your sy
 
 ## Configuring Passwords in the TUI
 
-1. Highlight the target server and press ++e++ (or ++a++ when adding a new server).
+1. Highlight the target server and press <kbd>e</kbd> (or <kbd>a</kbd> when adding a new server).
 2. Navigate to the **Authentication** tab or the `▶ Password & Interactive` section.
 3. Enter your password in the secure password input field (characters are masked).
 4. Save the form.

@@ -1,8 +1,4 @@
----
-title: SSH Configuration
----
-
-# :material-cog: SSH Configuration
+#  SSH Configuration
 
 ## Config Include Support
 

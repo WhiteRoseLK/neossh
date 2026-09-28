@@ -1,0 +1,50 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+      - '.github/workflows/wiki-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    name: Sync Wiki to GitHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Push to GitHub Wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Clone wiki repository if initialized
+          if git clone "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git" wiki_repo 2>/dev/null; then
+            echo "Wiki repository cloned successfully."
+            # Remove previous wiki files except .git
+            find wiki_repo -maxdepth 1 ! -name '.git' ! -name 'wiki_repo' -exec rm -rf {} +
+            
+            # Copy new wiki markdown files
+            cp -r wiki/* wiki_repo/
+            
+            cd wiki_repo
+            git add -A
+            if git diff --staged --quiet; then
+              echo "Wiki is already up to date."
+            else
+              git commit -m "docs: sync wiki from main branch [skip ci]"
+              git push origin master || git push origin main
+              echo "Wiki successfully updated."
+            fi
+          else
+            echo "::warning ::GitHub Wiki repository not yet initialized. Please open https://github.com/${{ github.repository }}/wiki and click 'Create the first page' to initialize the wiki repository."
+          fi
