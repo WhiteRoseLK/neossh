@@ -20,11 +20,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  deploy:
-    name: Build & Deploy Docs
+  validate:
+    name: Validate Documentation Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -45,7 +45,3 @@ jobs:
 
       - name: Build documentation (Strict)
         run: mkdocs build --strict
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: mkdocs gh-deploy --force

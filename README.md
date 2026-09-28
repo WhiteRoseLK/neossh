@@ -7,7 +7,7 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/v/release/WhiteRoseLK/neossh?style=flat-square)](https://github.com/WhiteRoseLK/neossh/releases)
-[![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-blue?style=flat-square)](https://whiteroselk.github.io/neossh/)
+[![Documentation](https://img.shields.io/badge/docs-available-blue?style=flat-square)](docs/)
 [![License](https://img.shields.io/github/license/WhiteRoseLK/neossh?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/WhiteRoseLK/neossh?style=flat-square)](go.mod)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?style=flat-square)](CODE_OF_CONDUCT.md)
@@ -24,7 +24,7 @@
 > This project exists solely because the original repository became unmaintained while having numerous valuable open PRs and issues. Rather than letting that work gather dust, **neossh** continues development, integrates community contributions, and provides ongoing maintenance.
 
 > [!TIP]
-> 📚 **Complete Documentation Site**: Looking for in-depth topic guides, advanced architecture, and complete references? Check out the [**neossh Documentation Portal**](https://whiteroselk.github.io/neossh/).
+> 📚 **Complete Documentation**: Looking for in-depth topic guides, advanced architecture, and complete references? Browse the [**neossh Documentation**](docs/).
 
 ## 💡 About neossh
 
