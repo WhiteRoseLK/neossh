@@ -51,6 +51,7 @@ type ServerService interface {
 	SaveDefaultIdentityKey(key string) error
 	ReloadServers() error
 	UpdateServerPing(alias string, status string, latency time.Duration)
+	GetSSHAgentStatus() domain.SSHAgentStatus
 }
 
 // GitService provides Git and SSH key management operations.
@@ -63,6 +64,7 @@ type GitService interface {
 	GetCurrentGitSSHConfig(repoPath string) (string, error)
 	ClearGitSSHConfig(repoPath string, scope string) error
 	GetLoadedAgentKeys() ([]string, error)
+	GetSSHAgentStatus() domain.SSHAgentStatus
 
 	// SSH Key management
 	ListAllSSHKeys(serverRepo ServerRepository) ([]domain.SSHKey, error)

@@ -28,6 +28,7 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | <kbd>Shift+C</kbd> | **Key Comment** | 🔒 Blocked | Inspect and edit SSH public/private key comment |
 | <kbd>l</kbd> | **Agent Load** | 🔒 Blocked | Load server identity key into system `ssh-agent` |
 | <kbd>u</kbd> | **Agent Unload** | 🔒 Blocked | Unload server identity key from `ssh-agent` |
+| <kbd>Shift+L</kbd> | **Agent Inspector** | ✅ Yes | Inspect live keys loaded in system SSH agent |
 | <kbd>v</kbd> | **Paste SSH Command** | 🔒 Blocked | Parse SSH command from clipboard into Add form |
 | <kbd>y</kbd> | **Clone Server** | 🔒 Blocked | Duplicate server configuration with automatic alias deduplication |
 | <kbd>Shift+K</kbd> | **Kill / Deploy Key** | 🔒 Blocked | Kill session (Active panel) / Run `ssh-copy-id` (Servers panel) |

@@ -2057,3 +2057,8 @@ func sshOptionConsumesValue(opt string) bool {
 		return false
 	}
 }
+
+// GetSSHAgentStatus returns live telemetry on the active SSH agent.
+func (s *serverService) GetSSHAgentStatus() domain.SSHAgentStatus {
+	return QuerySSHAgentStatus()
+}

@@ -219,8 +219,27 @@ func (t *tui) handleClipboardKeys(cmd rune) bool {
 	}
 }
 
+func (t *tui) handleAgentKeys(cmd rune) bool {
+	switch cmd {
+	case 'l':
+		t.handleLoadServerKeyToAgent()
+		return true
+	case 'L':
+		t.handleAgentInspector()
+		return true
+	case 'u':
+		t.handleUnloadServerKeyFromAgent()
+		return true
+	case 'C':
+		t.handleEditServerKeyComment()
+		return true
+	default:
+		return false
+	}
+}
+
 func (t *tui) handleActionKeys(cmd rune) bool {
-	if t.handleClipboardKeys(cmd) {
+	if t.handleClipboardKeys(cmd) || t.handleAgentKeys(cmd) {
 		return true
 	}
 
@@ -243,12 +262,6 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 	case 'P':
 		t.handleGitSSHSetup()
 		return true
-	case 'l':
-		t.handleLoadServerKeyToAgent()
-		return true
-	case 'u':
-		t.handleUnloadServerKeyFromAgent()
-		return true
 	case 'm':
 		t.handleToggleServerHidden()
 		return true
@@ -260,9 +273,6 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 		return true
 	case 'S':
 		t.handleSortReverse()
-		return true
-	case 'C':
-		t.handleEditServerKeyComment()
 		return true
 	case 'g':
 		t.handlePingSelected()
@@ -1859,14 +1869,28 @@ func (t *tui) defaultStatusText() string {
 func (t *tui) defaultStatusTextLocked() string {
 	base := StatusText(t.readonly)
 	if t.autoPingEnabled {
-		return base + fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", t.autoPingSecondsRemaining)
+		base += fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", t.autoPingSecondsRemaining)
 	}
+	base += t.renderAgentStatusBadge()
 	return base
 }
 
 func (t *tui) defaultStatusTextWithCountdown(rem int) string {
 	base := StatusText(t.readonly)
-	return base + fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", rem)
+	base += fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", rem)
+	base += t.renderAgentStatusBadge()
+	return base
+}
+
+func (t *tui) renderAgentStatusBadge() string {
+	st := t.getAgentStatus()
+	if st.Available {
+		if st.KeyCount > 0 {
+			return fmt.Sprintf(" • [green::b]🔑 %d key(s) (%s)[-::-]", st.KeyCount, st.Type)
+		}
+		return fmt.Sprintf(" • [yellow]🔑 0 keys (%s)[-]", st.Type)
+	}
+	return " • [gray]🔑 Agent: inactive[-]"
 }
 
 // showStatusTempColor displays a temporary colored message in the status bar and restores default text after 2s.
@@ -2306,6 +2330,10 @@ func (t *tui) handleLoadServerKeyToAgent() {
 		}
 	}
 
+	t.refreshAgentStatus()
+	if t.statusBar != nil {
+		t.statusBar.SetText(t.defaultStatusText())
+	}
 	t.showStatusTemp(fmt.Sprintf("Key %s loaded into ssh-agent", sshKey.Name))
 	t.updateDetailsForSelection()
 }
@@ -2342,8 +2370,22 @@ func (t *tui) handleUnloadServerKeyFromAgent() {
 		return
 	}
 
+	t.refreshAgentStatus()
+	if t.statusBar != nil {
+		t.statusBar.SetText(t.defaultStatusText())
+	}
 	t.showStatusTemp(fmt.Sprintf("Key %s unloaded from ssh-agent", sshKey.Name))
 	t.updateDetailsForSelection()
+}
+
+func (t *tui) handleAgentInspector() {
+	modal := NewSSHAgentModal(t.app, t.serverService, func() {
+		t.handleModalClose()
+	}, func(msg, color string) {
+		t.showStatusTempColor(msg, color)
+	})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
 }
 
 func (t *tui) getSSHKeyForServer(server domain.Server) *domain.SSHKey {

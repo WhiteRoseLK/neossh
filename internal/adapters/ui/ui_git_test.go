@@ -61,6 +61,9 @@ func (m *mockGitServiceForUI) ClearGitSSHConfig(repoPath, scope string) error {
 func (m *mockGitServiceForUI) GetLoadedAgentKeys() ([]string, error) {
 	return []string{}, nil
 }
+func (m *mockGitServiceForUI) GetSSHAgentStatus() domain.SSHAgentStatus {
+	return domain.SSHAgentStatus{Available: true, KeyCount: len(m.keys), Type: domain.AgentTypeOpenSSH}
+}
 func (m *mockGitServiceForUI) ListAllSSHKeys(serverRepo ports.ServerRepository) ([]domain.SSHKey, error) {
 	return m.keys, nil
 }
