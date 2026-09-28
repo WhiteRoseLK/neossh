@@ -1,17 +1,13 @@
----
-title: SFTP & File Transfer
----
-
-# :material-folder-network: SFTP & File Transfer
+#  SFTP & File Transfer
 
 ## Built-in Dual-Pane SFTP Manager
 
-Press ++ctrl+f++ (or ++shift+f++ to use the configured file manager) to open the interactive dual-pane file manager:
+Press ++ctrl+f<kbd> (or </kbd>shift+f<kbd> to use the configured file manager) to open the interactive dual-pane file manager:
 
 - **WinSCP / FileZilla style** with local (left) and remote (right) panels
 - Directory navigation with arrow keys
-- Sort by name, size, or date with ++s++
-- Upload files with ++u++, download with ++d++
+- Sort by name, size, or date with </kbd>s<kbd>
+- Upload files with </kbd>u<kbd>, download with </kbd>d<kbd>
 - Real-time streaming transfer progress indicators
 - Overwrite confirmation dialogs
 
@@ -76,10 +72,11 @@ Example custom template:
 
 | Key | Action |
 |:---:|--------|
-| ++shift+f++ | Launch configured file manager (external or internal) |
-| ++ctrl+f++ | Open built-in dual-pane SFTP manager directly |
+| </kbd>shift+f<kbd> | Launch configured file manager (external or internal) |
+| </kbd>ctrl+f++ | Open built-in dual-pane SFTP manager directly |
 
-!!! tip "Terminal vs GUI tools"
+> [!TIP]
+> **Terminal vs GUI tools**
     Terminal tools (sftp, yazi, ranger) suspend the TUI during use. GUI tools (filezilla, cyberduck, nautilus, dolphin) launch in the background while the TUI stays active.
 
 ## Protocol URLs

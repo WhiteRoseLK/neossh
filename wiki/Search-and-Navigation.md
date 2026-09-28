@@ -1,12 +1,8 @@
----
-title: Search & Navigation
----
-
-# :material-magnify: Search & Navigation
+#  Search & Navigation
 
 ## Fuzzy Search
 
-Press ++slash++ or ++0++ to activate the search bar. Type to fuzzy search across server aliases, hostnames, IP addresses, usernames, and tags.
+Press <kbd>slash</kbd> or <kbd>0</kbd> to activate the search bar. Type to fuzzy search across server aliases, hostnames, IP addresses, usernames, and tags.
 
 ## Advanced Filter Syntax
 
@@ -23,7 +19,8 @@ Combine structured filters with free-text search for precise results:
 | `status:<state>` | `status:up`, `status:down`, `status:unknown` | Filter by ping status |
 | `group:<name>` | `group:production` | Filter by server folder/group |
 
-!!! example "Combining filters"
+> [!NOTE]
+> **Example: Combining filters**
     ```
     tag:prod user:root status:up web
     ```
@@ -41,16 +38,16 @@ neossh has four main panels:
 
 | Panel | Focus Key | Description |
 |-------|:---------:|-------------|
-| Search | ++0++ | Fuzzy search bar |
-| Servers | ++1++ | Server list |
-| Active Sessions | ++2++ | Running SSH sessions |
-| Details | ++3++ | Selected server details |
+| Search | <kbd>0</kbd> | Fuzzy search bar |
+| Servers | <kbd>1</kbd> | Server list |
+| Active Sessions | <kbd>2</kbd> | Running SSH sessions |
+| Details | <kbd>3</kbd> | Selected server details |
 
-Use ++tab++ / ++shift+tab++ to cycle focus between panels.
+Use <kbd>tab</kbd> / ++shift+tab<kbd> to cycle focus between panels.
 
 ## Sorting
 
-Press ++s++ to toggle sort mode:
+Press </kbd>s++ to toggle sort mode:
 
 1. **Alias** (A→Z)
 2. **Alias** (Z→A)
@@ -71,7 +68,8 @@ neossh prod
 neossh -f prod
 ```
 
-!!! tip "Screen sharing safety"
+> [!TIP]
+> **Screen sharing safety**
     Use pre-filtering during screen shares or demos to show only relevant servers.
 
 ## Direct Connect

@@ -1,8 +1,4 @@
----
-title: Backup & Export
----
-
-# :material-package-variant: Backup & Export
+#  Backup & Export
 
 ## Export Configuration Bundle
 
@@ -42,7 +38,8 @@ The `--sanitize` flag strips sensitive data for safe team distribution:
 - Strips sensitive comments (`# password:`, `# token:`)
 - Produces a clean bundle safe for dotfiles or team sharing
 
-!!! warning "What is NEVER included (even without sanitize)"
+> [!WARNING]
+> **What is NEVER included (even without sanitize)**
     - **Private key files** — only `IdentityFile` path references appear in config
     - **vault.json** — encrypted password vault
     - **OS keyring contents** — platform-specific credentials

@@ -1,12 +1,8 @@
----
-title: Port Forwarding & Tunnels
----
-
-# :material-tunnel: Port Forwarding & Tunnels
+#  Port Forwarding & Tunnels
 
 ## Interactive Tunnel Assistant
 
-Press ++f++ to open the port forwarding assistant. It supports three tunnel types:
+Press <kbd>f</kbd> to open the port forwarding assistant. It supports three tunnel types:
 
 ### Local Forwarding (`-L`)
 
@@ -16,7 +12,8 @@ Forward a local port to a service on the remote network:
 Local port 3306 → remote-db:3306 via ssh-server
 ```
 
-!!! example "Access a remote database locally"
+> [!NOTE]
+> **Example: Access a remote database locally**
     Forward local port `3306` to `localhost:3306` on the remote server, then connect with `mysql -h 127.0.0.1 -P 3306`.
 
 ### Remote Forwarding (`-R`)

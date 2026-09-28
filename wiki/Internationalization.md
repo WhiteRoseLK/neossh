@@ -1,8 +1,4 @@
----
-title: Internationalization
----
-
-# :material-translate: Internationalization (i18n)
+#  Internationalization (i18n)
 
 `neossh` features full runtime internationalization, allowing you to use the terminal interface in your native language.
 

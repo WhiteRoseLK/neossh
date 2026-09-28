@@ -1,8 +1,4 @@
----
-title: Key Management
----
-
-# :material-key: Key Management
+#  Key Management
 
 ## SSH Key Autocomplete
 
@@ -22,13 +18,13 @@ neossh --default-key ""
 
 Also configurable via:
 
-- **Git & SSH Keys Setup dialog** (++shift+p++ or ++ctrl+g++)
+- **Git & SSH Keys Setup dialog** (++shift+p<kbd> or </kbd>ctrl+g<kbd>)
 - **Environment variable**: `NEOSSH_DEFAULT_KEY`
 - **Settings file**: `~/.neossh/settings.json` → `"default_identity_key"`
 
 ## Git SSH Key Profiles
 
-Press ++shift+p++ or ++ctrl+g++ to open the Git SSH Key Configuration & Profile Switcher:
+Press </kbd>shift+p<kbd> or </kbd>ctrl+g<kbd> to open the Git SSH Key Configuration & Profile Switcher:
 
 - Configure **per-repository** or **global** Git SSH keys via `core.sshCommand`
 - Supports GitHub, GitLab, and Bitbucket
@@ -44,14 +40,14 @@ neossh --git-ssh ""
 
 ## SSH Key Comment Editor
 
-Press ++shift+c++ to inspect and directly edit public/private key comments on the selected server's identity file.
+Press </kbd>shift+c<kbd> to inspect and directly edit public/private key comments on the selected server's identity file.
 
 ## SSH Agent Integration
 
 | Key | Action |
 |:---:|--------|
-| ++l++ | Load selected server's key into `ssh-agent` |
-| ++u++ | Unload selected server's key from `ssh-agent` |
+| </kbd>l<kbd> | Load selected server's key into `ssh-agent` |
+| </kbd>u<kbd> | Unload selected server's key from `ssh-agent` |
 
 ## SSH Key Type Badges & FIDO2
 
@@ -70,7 +66,7 @@ Badges are detected from public key file headers.
 
 ## One-Touch SSH Key Deployment
 
-Press ++shift+k++ (on the Servers panel) to automatically push your public SSH key to the remote host using `ssh-copy-id`.
+Press </kbd>shift+k++ (on the Servers panel) to automatically push your public SSH key to the remote host using `ssh-copy-id`.
 
-!!! note
+> [!NOTE]
     This action is disabled in read-only mode (`--readonly` / `-r`).

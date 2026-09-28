@@ -1,8 +1,4 @@
----
-title: Shell Completion
----
-
-# :material-console-line: Shell Autocompletion
+#  Shell Autocompletion
 
 `neossh` includes rich shell autocompletion for **Bash**, **Zsh**, **Fish**, and **PowerShell**, complete with dynamic server alias suggestions directly parsed from your SSH configuration.
 
@@ -10,14 +6,14 @@ title: Shell Completion
 
 ## Capabilities
 
-- **Dynamic Server Alias Completion**: Press ++tab++ after `neossh`, `neossh -c`, `neossh --scp`, `neossh --sshfs`, `neossh --sftp`, or `neossh --tunnel` to view matching host aliases along with their `user@host:port` descriptions.
+- **Dynamic Server Alias Completion**: Press <kbd>tab</kbd> after `neossh`, `neossh -c`, `neossh --scp`, `neossh --sshfs`, `neossh --sftp`, or `neossh --tunnel` to view matching host aliases along with their `user@host:port` descriptions.
 - **Flag & Option Completion**: Flags like `--theme` suggest available themes (`dark`, `light`, `system`), `--lang` suggests supported locales (`en`, `fr`, `zh-CN`), and `--sshconfig` / `--known-hosts` trigger path completions.
 
 ---
 
 ## Installation Instructions
 
-=== "Bash"
+### Bash
 
     **Current Session:**
     ```bash
@@ -34,7 +30,7 @@ title: Shell Completion
     neossh completion bash > $(brew --prefix)/etc/bash_completion.d/neossh
     ```
 
-=== "Zsh"
+### Zsh
 
     Ensure completion is enabled in your `~/.zshrc`:
     ```bash
@@ -56,7 +52,7 @@ title: Shell Completion
     neossh completion zsh > $(brew --prefix)/share/zsh/site-functions/_neossh
     ```
 
-=== "Fish"
+### Fish
 
     **Current Session:**
     ```fish
@@ -69,7 +65,7 @@ title: Shell Completion
     neossh completion fish > ~/.config/fish/completions/neossh.fish
     ```
 
-=== "PowerShell"
+### PowerShell
 
     **Current Session:**
     ```powershell

@@ -1,16 +1,12 @@
----
-title: Pre-Connect Hooks
----
-
-# :material-hook: Pre-Connect Hooks
+#  Pre-Connect Hooks
 
 Run custom local commands or scripts automatically before connecting to an SSH host.
 
 ## Use Cases
 
-- :material-shield: Triggering corporate VPN connection scripts before dialing private IP ranges
-- :material-lightning-bolt: Sending Wake-on-LAN (WOL) magic packets to spin up remote bare-metal hosts
-- :material-key: Refreshing short-lived cloud credentials or MFA tokens (AWS SSM, Cloudflare Access, Okta)
+-  Triggering corporate VPN connection scripts before dialing private IP ranges
+-  Sending Wake-on-LAN (WOL) magic packets to spin up remote bare-metal hosts
+-  Refreshing short-lived cloud credentials or MFA tokens (AWS SSM, Cloudflare Access, Okta)
 
 ## Configuration
 
@@ -37,7 +33,7 @@ neossh --pre-connect "vpn-up.sh %h" -c my-server
 
 ### Via TUI
 
-Edit a server (++e++) and configure the pre-connect command in the form.
+Edit a server (<kbd>e</kbd>) and configure the pre-connect command in the form.
 
 ## Token Expansion
 
