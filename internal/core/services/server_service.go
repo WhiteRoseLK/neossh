@@ -1542,6 +1542,35 @@ func (s *serverService) ImportKnownHosts(knownHostsPath string) (domain.ImportRe
 	return res, err
 }
 
+// ListKnownHostRecords returns all parsed entries in the given known_hosts file.
+func (s *serverService) ListKnownHostRecords(knownHostsPath string) ([]domain.KnownHostRecord, error) {
+	return s.serverRepository.ListKnownHostRecords(knownHostsPath)
+}
+
+// RemoveKnownHost deletes host entries matching host and port from known_hosts, creating a backup.
+func (s *serverService) RemoveKnownHost(knownHostsPath, host string, port int) (string, int, error) {
+	if s.readonly {
+		return "", 0, ErrReadOnly
+	}
+	return s.serverRepository.RemoveKnownHost(knownHostsPath, host, port)
+}
+
+// RemoveKnownHostByLine removes the entry at the specified 1-based line number.
+func (s *serverService) RemoveKnownHostByLine(knownHostsPath string, lineNumber int) (string, error) {
+	if s.readonly {
+		return "", ErrReadOnly
+	}
+	return s.serverRepository.RemoveKnownHostByLine(knownHostsPath, lineNumber)
+}
+
+// ScanAndAddKnownHost connects to host:port, captures its host key, and appends it to known_hosts.
+func (s *serverService) ScanAndAddKnownHost(knownHostsPath, host string, port int) (*domain.KnownHostRecord, error) {
+	if s.readonly {
+		return nil, ErrReadOnly
+	}
+	return s.serverRepository.ScanAndAddKnownHost(knownHostsPath, host, port)
+}
+
 // GetTheme returns the current theme name from settings.
 func (s *serverService) GetTheme() (string, error) {
 	return s.serverRepository.GetTheme()

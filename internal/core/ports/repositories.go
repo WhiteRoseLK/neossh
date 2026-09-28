@@ -30,6 +30,10 @@ type ServerRepository interface {
 	GetMetadataFile() string
 	DiscoverKnownHosts(knownHostsPath string) ([]domain.Server, domain.ImportResult, error)
 	ImportKnownHosts(knownHostsPath string) (domain.ImportResult, error)
+	ListKnownHostRecords(knownHostsPath string) ([]domain.KnownHostRecord, error)
+	RemoveKnownHost(knownHostsPath, host string, port int) (string, int, error)
+	RemoveKnownHostByLine(knownHostsPath string, lineNumber int) (string, error)
+	ScanAndAddKnownHost(knownHostsPath, host string, port int) (*domain.KnownHostRecord, error)
 	GetTheme() (string, error)
 	SaveTheme(theme string) error
 	GetPreConnectCommand() (string, error)

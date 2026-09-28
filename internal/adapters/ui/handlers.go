@@ -301,8 +301,11 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 			t.handleInstallSSHKey()
 		}
 		return true
-	case 'i', 'I':
+	case 'i':
 		t.handleImportKnownHosts()
+		return true
+	case 'I':
+		t.handleKnownHostsManager()
 		return true
 	case 'T':
 		t.handleThemeToggle()
@@ -833,6 +836,10 @@ func (t *tui) handleServerConnect() {
 	if !ok {
 		return
 	}
+	t.connectToServer(server)
+}
+
+func (t *tui) connectToServer(server domain.Server) {
 	if server.IsWildcardServer() {
 		t.showErrorModal("SSH Connection Warning", "Cannot initiate direct SSH connection to a wildcard pattern block")
 		return
@@ -1505,8 +1512,98 @@ func (t *tui) showSSHErrorModal(alias, errMsg string) {
 	if server, ok := t.findServerByAlias(alias); ok {
 		srvPtr = &server
 	}
+	if details := domain.ParseHostKeyMismatch(errMsg, srvPtr, alias); details != nil {
+		t.showHostKeyMismatchModal(alias, details)
+		return
+	}
 	title, msg := formatSSHErrorMessage(srvPtr, alias, errMsg)
 	t.showErrorModal(title, msg)
+}
+
+func (t *tui) showHostKeyMismatchModal(alias string, details *domain.HostKeyMismatchDetails) {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("[yellow::b]🔑 Host Key Mismatch for %q[-::-]\n\n", alias))
+	sb.WriteString(fmt.Sprintf("Target: [white]%s:%d[-]\n", details.TargetHost, details.TargetPort))
+	if details.OffendingFile != "" && details.OffendingLine > 0 {
+		sb.WriteString(fmt.Sprintf("Offending Key: [gray]%s:%d[-]\n", details.OffendingFile, details.OffendingLine))
+	}
+	if details.RemoteFingerprint != "" {
+		sb.WriteString(fmt.Sprintf("New Fingerprint: [cyan]%s[-] (%s)\n", details.RemoteFingerprint, details.RemoteKeyType))
+	}
+	sb.WriteString("\n[gray]The remote host key has changed. If the host was re-installed,\nchoose an action below to resolve the conflict:[-]")
+
+	modal := tview.NewModal().
+		SetText(sb.String()).
+		AddButtons([]string{"[yellow]P[-]urge Old Key", "[yellow]A[-]ccept & Reconnect", "[yellow]C[-]lose"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			switch buttonIndex {
+			case 0: // Purge Old Key
+				if t.readonly {
+					t.showReadonlyModal()
+					return
+				}
+				bak, _, err := t.serverService.RemoveKnownHost("", details.TargetHost, details.TargetPort)
+				t.handleModalClose()
+				if err != nil {
+					t.showStatusTempColor("Failed to purge host key: "+err.Error(), "#FF6B6B")
+				} else {
+					statusMsg := fmt.Sprintf("Purged host key for %s (backup: %s)", details.TargetHost, filepath.Base(bak))
+					t.showStatusTempColor(statusMsg, "#50FA7B")
+				}
+			case 1: // Accept & Reconnect
+				if t.readonly {
+					t.showReadonlyModal()
+					return
+				}
+				_, _, _ = t.serverService.RemoveKnownHost("", details.TargetHost, details.TargetPort)
+				rec, err := t.serverService.ScanAndAddKnownHost("", details.TargetHost, details.TargetPort)
+				t.handleModalClose()
+				if err != nil {
+					t.showStatusTempColor("Scan & add host key failed: "+err.Error(), "#FF6B6B")
+				} else {
+					t.showStatusTempColor(fmt.Sprintf("Added new host key (%s) to known_hosts", rec.KeyType), "#50FA7B")
+					if srv, ok := t.findServerByAlias(alias); ok {
+						t.connectToServer(srv)
+					} else {
+						t.connectToServer(domain.Server{Alias: alias, Host: details.TargetHost, Port: details.TargetPort})
+					}
+				}
+			default:
+				t.handleModalClose()
+			}
+		})
+
+	modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'p', 'P':
+			modal.SetFocus(0)
+			return nil
+		case 'a', 'A':
+			modal.SetFocus(1)
+			return nil
+		case 'c', 'C':
+			t.handleModalClose()
+			return nil
+		}
+		if event.Key() == tcell.KeyEscape {
+			t.handleModalClose()
+			return nil
+		}
+		return event
+	})
+
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
+}
+
+func (t *tui) handleKnownHostsManager() {
+	modal := NewKnownHostsModal(t.app, t.serverService, func() {
+		t.handleModalClose()
+	}, func(msg, color string) {
+		t.showStatusTempColor(msg, color)
+	})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
 }
 
 func formatSSHErrorMessage(server *domain.Server, alias, rawErr string) (string, string) {

@@ -14,6 +14,7 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | <kbd>e</kbd> | **Edit Server** | 🔒 Blocked | Open modal form to edit selected server configuration |
 | <kbd>d</kbd> | **Delete Server** | 🔒 Blocked | Safely delete selected server with confirmation dialog |
 | <kbd>i</kbd> | **Import Known Hosts** | 🔒 Blocked | Import discovered hosts from `~/.ssh/known_hosts` |
+| <kbd>Shift+I</kbd> | **Known Hosts Manager** | 🔒 Blocked | Inspect, search, and delete host key entries from `~/.ssh/known_hosts` |
 | <kbd>Space</kbd> | **Toggle Group** | ✅ Yes | Expand or collapse server folder group |
 | <kbd>m</kbd> | **Context Menu** | 🔒 Blocked* | Toggle hidden server (on server) / Group tmux menu (on group) |
 | <kbd>Shift+H</kbd> | **Toggle Hidden** | ✅ Yes | Toggle visibility of hidden servers in the list |

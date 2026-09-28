@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/WhiteRoseLK/neossh/internal/core/domain"
+	"github.com/rivo/tview"
 )
 
 func TestFormatSSHErrorMessage_Diagnostics(t *testing.T) {
@@ -131,5 +132,32 @@ func TestFormatSSHErrorMessage_Diagnostics(t *testing.T) {
 				t.Errorf("message does not contain %q. Got:\n%s", tt.wantInMessage, msg)
 			}
 		})
+	}
+}
+
+func TestHostKeyMismatchModal(t *testing.T) {
+	app := tview.NewApplication()
+	mockSvc := &mockKnownHostsService{
+		records: []domain.KnownHostRecord{
+			{LineNumber: 42, HostPattern: "192.168.1.50", KeyType: "ssh-ed25519"},
+		},
+	}
+	ui := &tui{
+		app:           app,
+		serverService: mockSvc,
+	}
+
+	details := &domain.HostKeyMismatchDetails{
+		TargetHost:        "192.168.1.50",
+		TargetPort:        22,
+		OffendingFile:     "/home/user/.ssh/known_hosts",
+		OffendingLine:     42,
+		RemoteFingerprint: "SHA256:abc123test",
+		RemoteKeyType:     "ED25519",
+	}
+
+	ui.showHostKeyMismatchModal("test-alias", details)
+	if app.GetFocus() == nil {
+		t.Error("expected modal to be focused")
 	}
 }
