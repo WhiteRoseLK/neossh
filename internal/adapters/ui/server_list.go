@@ -27,23 +27,28 @@ import (
 
 type ServerList struct {
 	*tview.List
-	servers           []domain.Server
-	displayedItems    []*domain.Server
-	displayedHeaders  []string
-	collapsedGroups   map[string]bool
-	currentWidth      int
-	onSelection       func(domain.Server)
-	onSelectionChange func(domain.Server)
-	onReturnToSearch  func()
-	onTab             func()
-	onBacktab         func()
-	onGroupAction     func(groupName string, action string)
+	servers                []domain.Server
+	displayedItems         []*domain.Server
+	displayedHeaders       []string
+	collapsedGroups        map[string]bool
+	multiSelectEnabled     bool
+	selectedAliases        map[string]bool
+	currentWidth           int
+	onSelection            func(domain.Server)
+	onSelectionChange      func(domain.Server)
+	onMultiSelectionChange func(count int)
+	onReturnToSearch       func()
+	onTab                  func()
+	onBacktab              func()
+	onGroupAction          func(groupName string, action string)
 }
 
 func NewServerList() *ServerList {
 	list := &ServerList{
-		List:            tview.NewList(),
-		collapsedGroups: make(map[string]bool),
+		List:               tview.NewList(),
+		collapsedGroups:    make(map[string]bool),
+		selectedAliases:    make(map[string]bool),
+		multiSelectEnabled: true,
 	}
 	list.build()
 	return list
@@ -69,56 +74,98 @@ func (sl *ServerList) build() {
 		}
 	})
 
-	sl.List.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		//nolint:exhaustive // We only handle specific keys and pass through others
-		switch event.Key() {
-		case tcell.KeyTab:
-			if sl.onTab != nil {
-				sl.onTab()
-				return nil
-			}
-		case tcell.KeyBacktab:
-			if sl.onBacktab != nil {
-				sl.onBacktab()
-				return nil
-			}
-		case tcell.KeyLeft, tcell.KeyRight, tcell.KeyBackspace, tcell.KeyBackspace2, tcell.KeyESC:
-			if sl.onReturnToSearch != nil {
-				sl.onReturnToSearch()
-			}
-			return nil
-		case tcell.KeyDown:
-			return sl.selectNext()
-		case tcell.KeyUp:
-			return sl.selectPrev()
-		case tcell.KeyEnter, tcell.KeyRune:
-			isSpace := event.Key() == tcell.KeyRune && event.Rune() == ' '
-			isEnter := event.Key() == tcell.KeyEnter
-			isMenu := event.Key() == tcell.KeyRune && event.Rune() == 'm'
+	sl.List.SetInputCapture(sl.handleKeyInput)
+}
 
-			idx := sl.List.GetCurrentItem()
-			if idx >= 0 && idx < len(sl.displayedHeaders) {
-				groupName := sl.displayedHeaders[idx]
-				if groupName != "" {
-					if isSpace || isEnter {
-						sl.collapsedGroups[groupName] = !sl.collapsedGroups[groupName]
-						sl.UpdateServers(sl.servers)
-						for i, h := range sl.displayedHeaders {
-							if h == groupName {
-								sl.List.SetCurrentItem(i)
-								break
-							}
-						}
-						return nil
-					} else if isMenu {
-						sl.showGroupContextMenu(groupName)
-						return nil
-					}
+func (sl *ServerList) handleKeyInput(event *tcell.EventKey) *tcell.EventKey {
+	//nolint:exhaustive // We only handle specific keys and pass through others
+	switch event.Key() {
+	case tcell.KeyCtrlA:
+		if sl.multiSelectEnabled {
+			sl.ToggleSelectAll()
+			return nil
+		}
+	case tcell.KeyTab:
+		if sl.onTab != nil {
+			sl.onTab()
+			return nil
+		}
+	case tcell.KeyBacktab:
+		if sl.onBacktab != nil {
+			sl.onBacktab()
+			return nil
+		}
+	case tcell.KeyESC:
+		if sl.multiSelectEnabled && len(sl.selectedAliases) > 0 {
+			sl.ClearSelection()
+			return nil
+		}
+		if sl.onReturnToSearch != nil {
+			sl.onReturnToSearch()
+		}
+		return nil
+	case tcell.KeyLeft, tcell.KeyRight, tcell.KeyBackspace, tcell.KeyBackspace2:
+		if sl.onReturnToSearch != nil {
+			sl.onReturnToSearch()
+		}
+		return nil
+	case tcell.KeyDown:
+		return sl.selectNext()
+	case tcell.KeyUp:
+		return sl.selectPrev()
+	case tcell.KeyEnter, tcell.KeyRune:
+		return sl.handleActionKey(event)
+	}
+	return event
+}
+
+func (sl *ServerList) handleActionKey(event *tcell.EventKey) *tcell.EventKey {
+	isSpace := event.Key() == tcell.KeyRune && event.Rune() == ' '
+	isEnter := event.Key() == tcell.KeyEnter
+	isMenu := event.Key() == tcell.KeyRune && event.Rune() == 'm'
+	isStar := event.Key() == tcell.KeyRune && event.Rune() == '*'
+
+	idx := sl.List.GetCurrentItem()
+	if idx < 0 || idx >= len(sl.displayedHeaders) {
+		return event
+	}
+
+	groupName := sl.displayedHeaders[idx]
+	if groupName != "" {
+		if isSpace || isEnter {
+			sl.collapsedGroups[groupName] = !sl.collapsedGroups[groupName]
+			sl.UpdateServers(sl.servers)
+			for i, h := range sl.displayedHeaders {
+				if h == groupName {
+					sl.List.SetCurrentItem(i)
+					break
 				}
 			}
+			return nil
 		}
-		return event
-	})
+		if isMenu {
+			sl.showGroupContextMenu(groupName)
+			return nil
+		}
+		if isStar && sl.multiSelectEnabled {
+			sl.ToggleSelectGroup(groupName)
+			return nil
+		}
+	} else if idx < len(sl.displayedItems) && sl.displayedItems[idx] != nil {
+		if isSpace && sl.multiSelectEnabled {
+			sl.ToggleServerSelection(sl.displayedItems[idx].Alias)
+			return nil
+		}
+		if isStar && sl.multiSelectEnabled {
+			if sl.displayedItems[idx].Group != "" {
+				sl.ToggleSelectGroup(sl.displayedItems[idx].Group)
+			} else {
+				sl.ToggleSelectAll()
+			}
+			return nil
+		}
+	}
+	return event
 }
 
 func (sl *ServerList) hasAnyGroups(servers []domain.Server) bool {
@@ -137,7 +184,21 @@ func (sl *ServerList) addGroupHeader(fullPath, name string, depth int) {
 		icon = "[+]"
 	}
 	indent := strings.Repeat("  ", depth)
-	sl.List.AddItem(fmt.Sprintf("%s[yellow::b]%s %s[-]", indent, icon, name), "", 0, nil)
+	badge := ""
+	if sl.multiSelectEnabled && len(sl.selectedAliases) > 0 {
+		selectedInGroup := 0
+		totalInGroup := 0
+		for _, s := range sl.serversInGroup(fullPath) {
+			totalInGroup++
+			if sl.selectedAliases[s.Alias] {
+				selectedInGroup++
+			}
+		}
+		if selectedInGroup > 0 {
+			badge = fmt.Sprintf(" [green::b](%d/%d selected)[-]", selectedInGroup, totalInGroup)
+		}
+	}
+	sl.List.AddItem(fmt.Sprintf("%s[yellow::b]%s %s[-]%s", indent, icon, name, badge), "", 0, nil)
 	sl.displayedItems = append(sl.displayedItems, nil)
 	sl.displayedHeaders = append(sl.displayedHeaders, fullPath)
 }
@@ -192,6 +253,40 @@ func (sl *ServerList) processServerGroupHeaders(group string, lastParts []string
 	return serverVisible, parts
 }
 
+func (sl *ServerList) cleanStaleSelections(servers []domain.Server) {
+	if len(sl.selectedAliases) == 0 {
+		return
+	}
+	existing := make(map[string]bool, len(servers))
+	for _, s := range servers {
+		existing[s.Alias] = true
+	}
+	for alias := range sl.selectedAliases {
+		if !existing[alias] {
+			delete(sl.selectedAliases, alias)
+		}
+	}
+}
+
+func (sl *ServerList) addServerItem(s domain.Server, idx int, maxAliasWidth, listWidth int, indent string) {
+	var primary, secondary string
+	if sl.multiSelectEnabled {
+		primary, secondary = formatServerLine(s, maxAliasWidth, listWidth, sl.selectedAliases[s.Alias])
+	} else {
+		primary, secondary = formatServerLine(s, maxAliasWidth, listWidth)
+	}
+	if indent != "" {
+		primary = indent + primary
+	}
+	sl.List.AddItem(primary, secondary, 0, func() {
+		if sl.onSelection != nil {
+			sl.onSelection(sl.servers[idx])
+		}
+	})
+	sl.displayedItems = append(sl.displayedItems, &sl.servers[idx])
+	sl.displayedHeaders = append(sl.displayedHeaders, "")
+}
+
 func (sl *ServerList) UpdateServers(servers []domain.Server) {
 	currentAlias := ""
 	if idx := sl.List.GetCurrentItem(); idx >= 0 && idx < len(sl.displayedItems) {
@@ -204,6 +299,8 @@ func (sl *ServerList) UpdateServers(servers []domain.Server) {
 	sl.List.Clear()
 	sl.displayedItems = make([]*domain.Server, 0, len(servers))
 	sl.displayedHeaders = make([]string, 0, len(servers))
+
+	sl.cleanStaleSelections(servers)
 
 	maxAliasWidth := 0
 	for _, s := range servers {
@@ -248,34 +345,17 @@ func (sl *ServerList) UpdateServers(servers []domain.Server) {
 					continue
 				}
 
-				primary, secondary := formatServerLine(s, maxAliasWidth, listWidth)
 				indent := strings.Repeat("  ", len(parts)+1)
-				primary = indent + primary
-
-				idx := i
-				sl.List.AddItem(primary, secondary, 0, func() {
-					if sl.onSelection != nil {
-						sl.onSelection(sl.servers[idx])
-					}
-				})
-				sl.displayedItems = append(sl.displayedItems, &sl.servers[i])
-				sl.displayedHeaders = append(sl.displayedHeaders, "")
+				sl.addServerItem(s, i, maxAliasWidth, listWidth, indent)
 				continue
 			}
 		}
 
-		primary, secondary := formatServerLine(s, maxAliasWidth, listWidth)
+		indent := ""
 		if hasGroups && isPinned {
-			primary = "  " + primary
+			indent = "  "
 		}
-		idx := i
-		sl.List.AddItem(primary, secondary, 0, func() {
-			if sl.onSelection != nil {
-				sl.onSelection(sl.servers[idx])
-			}
-		})
-		sl.displayedItems = append(sl.displayedItems, &sl.servers[i])
-		sl.displayedHeaders = append(sl.displayedHeaders, "")
+		sl.addServerItem(s, i, maxAliasWidth, listWidth, indent)
 	}
 
 	if sl.List.GetItemCount() > 0 {
@@ -407,6 +487,185 @@ func (sl *ServerList) selectPrev() *tcell.EventKey {
 	}
 	if current > 0 {
 		sl.List.SetCurrentItem(current - 1)
+	}
+	return nil
+}
+
+func (sl *ServerList) SetMultiSelectEnabled(enabled bool) *ServerList {
+	sl.multiSelectEnabled = enabled
+	return sl
+}
+
+func (sl *ServerList) IsMultiSelectEnabled() bool {
+	return sl.multiSelectEnabled
+}
+
+func (sl *ServerList) OnMultiSelectionChange(fn func(count int)) *ServerList {
+	sl.onMultiSelectionChange = fn
+	return sl
+}
+
+func (sl *ServerList) IsServerSelected(alias string) bool {
+	return sl.selectedAliases != nil && sl.selectedAliases[alias]
+}
+
+func (sl *ServerList) SetServerSelected(alias string, selected bool) {
+	if sl.selectedAliases == nil {
+		sl.selectedAliases = make(map[string]bool)
+	}
+	if selected {
+		sl.selectedAliases[alias] = true
+	} else {
+		delete(sl.selectedAliases, alias)
+	}
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(len(sl.selectedAliases))
+	}
+}
+
+func (sl *ServerList) ToggleServerSelection(alias string) {
+	if sl.selectedAliases == nil {
+		sl.selectedAliases = make(map[string]bool)
+	}
+	if sl.selectedAliases[alias] {
+		delete(sl.selectedAliases, alias)
+	} else {
+		sl.selectedAliases[alias] = true
+	}
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(len(sl.selectedAliases))
+	}
+}
+
+func (sl *ServerList) ClearSelection() {
+	sl.selectedAliases = make(map[string]bool)
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(0)
+	}
+}
+
+func (sl *ServerList) SelectAllDisplayed() {
+	if sl.selectedAliases == nil {
+		sl.selectedAliases = make(map[string]bool)
+	}
+	for _, item := range sl.displayedItems {
+		if item != nil {
+			sl.selectedAliases[item.Alias] = true
+		}
+	}
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(len(sl.selectedAliases))
+	}
+}
+
+func (sl *ServerList) DeselectAllDisplayed() {
+	for _, item := range sl.displayedItems {
+		if item != nil {
+			delete(sl.selectedAliases, item.Alias)
+		}
+	}
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(len(sl.selectedAliases))
+	}
+}
+
+func (sl *ServerList) ToggleSelectAll() {
+	allSelected := true
+	displayedCount := 0
+	for _, item := range sl.displayedItems {
+		if item != nil {
+			displayedCount++
+			if !sl.selectedAliases[item.Alias] {
+				allSelected = false
+			}
+		}
+	}
+	if displayedCount == 0 {
+		return
+	}
+	if allSelected {
+		sl.DeselectAllDisplayed()
+	} else {
+		sl.SelectAllDisplayed()
+	}
+}
+
+func (sl *ServerList) serversInGroup(groupName string) []*domain.Server {
+	var inGroup []*domain.Server
+	for i := range sl.servers {
+		s := &sl.servers[i]
+		switch {
+		case groupName == "Pinned":
+			if !s.PinnedAt.IsZero() {
+				inGroup = append(inGroup, s)
+			}
+		case groupName == "Ungrouped":
+			if s.Group == "" && s.PinnedAt.IsZero() {
+				inGroup = append(inGroup, s)
+			}
+		default:
+			if s.Group == groupName || strings.HasPrefix(s.Group, groupName+"/") {
+				inGroup = append(inGroup, s)
+			}
+		}
+	}
+	return inGroup
+}
+
+func (sl *ServerList) ToggleSelectGroup(groupName string) {
+	groupServers := sl.serversInGroup(groupName)
+	if len(groupServers) == 0 {
+		return
+	}
+	allSelected := true
+	for _, s := range groupServers {
+		if !sl.selectedAliases[s.Alias] {
+			allSelected = false
+			break
+		}
+	}
+	for _, s := range groupServers {
+		if allSelected {
+			delete(sl.selectedAliases, s.Alias)
+		} else {
+			sl.selectedAliases[s.Alias] = true
+		}
+	}
+	sl.UpdateServers(sl.servers)
+	if sl.onMultiSelectionChange != nil {
+		sl.onMultiSelectionChange(len(sl.selectedAliases))
+	}
+}
+
+func (sl *ServerList) GetMultiSelectedServers() []domain.Server {
+	if len(sl.selectedAliases) == 0 {
+		return nil
+	}
+	var res []domain.Server
+	for _, s := range sl.servers {
+		if sl.selectedAliases[s.Alias] {
+			res = append(res, s)
+		}
+	}
+	return res
+}
+
+func (sl *ServerList) GetMultiSelectionCount() int {
+	return len(sl.selectedAliases)
+}
+
+func (sl *ServerList) GetTargetServers() []domain.Server {
+	multi := sl.GetMultiSelectedServers()
+	if len(multi) > 0 {
+		return multi
+	}
+	if focused, ok := sl.GetSelectedServer(); ok {
+		return []domain.Server{focused}
 	}
 	return nil
 }

@@ -155,6 +155,13 @@ func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
+	if event.Key() == tcell.KeyCtrlA {
+		if t.serverList != nil && t.serverList.IsMultiSelectEnabled() {
+			t.serverList.ToggleSelectAll()
+			return nil
+		}
+	}
+
 	if event.Key() == tcell.KeyCtrlG {
 		t.handleGitSSHSetup()
 		return nil
@@ -238,15 +245,8 @@ func (t *tui) handleAgentKeys(cmd rune) bool {
 	}
 }
 
-func (t *tui) handleActionKeys(cmd rune) bool {
-	if t.handleClipboardKeys(cmd) || t.handleAgentKeys(cmd) {
-		return true
-	}
-
+func (t *tui) handleServerCrudKeys(cmd rune) bool {
 	switch cmd {
-	case 'q':
-		t.handleQuit()
-		return true
 	case 'a':
 		t.handleServerAdd()
 		return true
@@ -267,6 +267,20 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 		return true
 	case 'H':
 		t.handleToggleShowHidden()
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *tui) handleActionKeys(cmd rune) bool {
+	if t.handleClipboardKeys(cmd) || t.handleAgentKeys(cmd) || t.handleServerCrudKeys(cmd) {
+		return true
+	}
+
+	switch cmd {
+	case 'q':
+		t.handleQuit()
 		return true
 	case 's':
 		t.handleSortToggle()
@@ -320,6 +334,12 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 	case 'T':
 		t.handleThemeToggle()
 		return true
+	case '*':
+		if t.serverList != nil && t.serverList.IsMultiSelectEnabled() {
+			t.serverList.ToggleSelectAll()
+			return true
+		}
+		return false
 	default:
 		return false
 	}
@@ -659,6 +679,10 @@ func (t *tui) getExistingAliasesExcept(exclude domain.Server) []string {
 func (t *tui) handleTagsEdit() {
 	if t.readonly {
 		t.showReadonlyModal()
+		return
+	}
+	if t.serverList != nil && t.serverList.GetMultiSelectionCount() > 1 {
+		t.showBulkEditTagsForm(t.serverList.GetMultiSelectedServers())
 		return
 	}
 	if server, ok := t.serverList.GetSelectedServer(); ok {
@@ -1210,13 +1234,24 @@ func (t *tui) updateServerListWithPingStatus() {
 }
 
 func (t *tui) handlePingAll() {
-	servers := t.serverList.GetServers()
+	var servers []domain.Server
+	isBulkSelected := false
+	if t.serverList != nil && t.serverList.GetMultiSelectionCount() > 0 {
+		servers = t.serverList.GetMultiSelectedServers()
+		isBulkSelected = true
+	} else if t.serverList != nil {
+		servers = t.serverList.GetServers()
+	}
 	if len(servers) == 0 {
 		t.showStatusTemp("No servers to ping")
 		return
 	}
 
-	t.showStatusTemp(fmt.Sprintf("Pinging all %d servers…", len(servers)))
+	if isBulkSelected {
+		t.showStatusTemp(fmt.Sprintf("Pinging %d selected servers…", len(servers)))
+	} else {
+		t.showStatusTemp(fmt.Sprintf("Pinging all %d servers…", len(servers)))
+	}
 
 	// Set all servers to checking status
 	t.pingStatuses = make(map[string]domain.Server)
@@ -1717,6 +1752,69 @@ func (t *tui) showEditTagsForm(server domain.Server) {
 	t.app.SetFocus(toFocus)
 }
 
+func (t *tui) showBulkEditTagsForm(servers []domain.Server) {
+	form := tview.NewForm()
+	form.SetBorder(true).
+		SetTitle(fmt.Sprintf(" Edit Tags: %d servers ", len(servers))).
+		SetTitleAlign(tview.AlignCenter)
+
+	form.AddInputField("Add Tags (comma):", "", 40, nil, nil)
+	form.AddInputField("Remove Tags (comma):", "", 40, nil, nil)
+
+	form.AddButton("Apply", func() {
+		addText := strings.TrimSpace(form.GetFormItem(0).(*tview.InputField).GetText())
+		remText := strings.TrimSpace(form.GetFormItem(1).(*tview.InputField).GetText())
+
+		var toAdd, toRemove []string
+		for _, part := range strings.Split(addText, ",") {
+			if s := strings.TrimSpace(part); s != "" {
+				toAdd = append(toAdd, s)
+			}
+		}
+		for _, part := range strings.Split(remText, ",") {
+			if s := strings.TrimSpace(part); s != "" {
+				toRemove = append(toRemove, s)
+			}
+		}
+
+		remMap := make(map[string]bool, len(toRemove))
+		for _, r := range toRemove {
+			remMap[r] = true
+		}
+
+		successCount := 0
+		for _, server := range servers {
+			tagMap := make(map[string]bool)
+			for _, tg := range server.Tags {
+				if !remMap[tg] {
+					tagMap[tg] = true
+				}
+			}
+			for _, tg := range toAdd {
+				tagMap[tg] = true
+			}
+			updatedTags := make([]string, 0, len(tagMap))
+			for tg := range tagMap {
+				updatedTags = append(updatedTags, tg)
+			}
+			newServer := server
+			newServer.Tags = updatedTags
+			if err := t.serverService.UpdateServer(server, newServer); err == nil {
+				successCount++
+			}
+		}
+
+		t.refreshServerList()
+		t.returnToMain()
+		t.showStatusTemp(fmt.Sprintf("Tags updated for %d/%d servers", successCount, len(servers)))
+	})
+	form.AddButton("Cancel", func() { t.returnToMain() })
+	form.SetCancelFunc(func() { t.returnToMain() })
+
+	t.app.SetRoot(form, true)
+	t.app.SetFocus(form)
+}
+
 func (t *tui) handlePortForward() {
 	if server, ok := t.serverList.GetSelectedServer(); ok {
 		if server.IsWildcardServer() {
@@ -1872,6 +1970,7 @@ func (t *tui) defaultStatusTextLocked() string {
 		base += fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", t.autoPingSecondsRemaining)
 	}
 	base += t.renderAgentStatusBadge()
+	base += t.renderMultiSelectionBadge()
 	return base
 }
 
@@ -1879,7 +1978,26 @@ func (t *tui) defaultStatusTextWithCountdown(rem int) string {
 	base := StatusText(t.readonly)
 	base += fmt.Sprintf(" • [dodgerblue::b][WATCH %ds][-]", rem)
 	base += t.renderAgentStatusBadge()
+	base += t.renderMultiSelectionBadge()
 	return base
+}
+
+func (t *tui) renderMultiSelectionBadge() string {
+	if t.serverList != nil {
+		count := t.serverList.GetMultiSelectionCount()
+		if count == 1 {
+			return " • [yellow::b][1 server selected][-]"
+		} else if count > 1 {
+			return fmt.Sprintf(" • [yellow::b][%d servers selected][-]", count)
+		}
+	}
+	return ""
+}
+
+func (t *tui) handleMultiSelectionChange(count int) {
+	if !t.isShowingTempStatus && t.statusBar != nil {
+		t.statusBar.SetText(t.defaultStatusText())
+	}
 }
 
 func (t *tui) renderAgentStatusBadge() string {
