@@ -19,6 +19,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/gdamore/tcell/v2"
 	"go.uber.org/zap"
@@ -90,6 +91,7 @@ type tui struct {
 	themeFlag                string
 	language                 string
 	defaultIdentityKey       string
+	customKeybindings        map[rune]rune
 }
 
 func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, cfg ...Config) App {
@@ -125,7 +127,7 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		interval = 60 * time.Second
 	}
 
-	return &tui{
+	t := &tui{
 		logger:                   logger,
 		app:                      tview.NewApplication(),
 		serverService:            ss,
@@ -147,6 +149,8 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		language:                 language,
 		defaultIdentityKey:       defaultIdentityKey,
 	}
+	t.initCustomKeybindings()
+	return t
 }
 
 func (t *tui) getDefaultIdentityKey() string {
@@ -523,4 +527,94 @@ func (t *tui) persistSortMode() {
 	if err := t.settings.SaveSortMode(t.sortMode); err != nil {
 		t.logger.Warnw("failed to save sort mode preference", "error", err)
 	}
+}
+
+func (t *tui) initCustomKeybindings() {
+	if t.settings == nil {
+		return
+	}
+	raw, err := t.settings.LoadKeybindings()
+	if err != nil || len(raw) == 0 {
+		return
+	}
+	t.customKeybindings = buildCustomKeyMap(raw)
+}
+
+var canonicalActionAliases = map[string]rune{
+	"add":                'a',
+	"add_server":         'a',
+	"edit":               'e',
+	"edit_server":        'e',
+	"delete":             'd',
+	"delete_server":      'd',
+	"clone":              'y',
+	"clone_server":       'y',
+	"pin":                'p',
+	"pin_server":         'p',
+	"copy":               'c',
+	"copy_command":       'c',
+	"copy_host":          'h',
+	"paste":              'v',
+	"paste_command":      'v',
+	"scp":                'o',
+	"scp_modal":          'o',
+	"sshfs":              'M',
+	"sshfs_modal":        'M',
+	"sftp":               'F',
+	"launch_sftp":        'F',
+	"port_forward":       'f',
+	"port_forwarding":    'f',
+	"sort":               's',
+	"sort_toggle":        's',
+	"ping":               'g',
+	"ping_server":        'g',
+	"ping_all":           'G',
+	"theme":              'T',
+	"theme_toggle":       'T',
+	"tags":               't',
+	"edit_tags":          't',
+	"hidden":             'm',
+	"toggle_hidden":      'm',
+	"show_hidden":        'H',
+	"toggle_show_hidden": 'H',
+	"load_key":           'l',
+	"load_agent_key":     'l',
+	"unload_key":         'u',
+	"unload_agent_key":   'u',
+	"git_ssh":            'P',
+	"git_profiles":       'P',
+	"install_key":        'K',
+	"quit":               'q',
+}
+
+func buildCustomKeyMap(raw map[string]string) map[rune]rune {
+	res := make(map[rune]rune)
+	for actionOrKey, targetOrKey := range raw {
+		actionOrKey = strings.TrimSpace(actionOrKey)
+		targetOrKey = strings.TrimSpace(targetOrKey)
+		if actionOrKey == "" || targetOrKey == "" {
+			continue
+		}
+
+		// Syntax 1: "add_server": "n" (action -> key)
+		if actionRune, isAction := canonicalActionAliases[strings.ToLower(actionOrKey)]; isAction {
+			runes := []rune(targetOrKey)
+			if len(runes) == 1 {
+				res[runes[0]] = actionRune
+				if actionRune != 'T' && actionRune != 'H' && actionRune != 'G' && actionRune != 'P' && actionRune != 'M' && actionRune != 'F' && actionRune != 'K' {
+					res[unicode.ToUpper(runes[0])] = actionRune
+					res[unicode.ToLower(runes[0])] = actionRune
+				}
+			}
+			continue
+		}
+
+		// Syntax 2: "n": "a" (key -> key)
+		srcRunes := []rune(actionOrKey)
+		targetRunes := []rune(targetOrKey)
+		if len(srcRunes) == 1 && len(targetRunes) == 1 {
+			res[srcRunes[0]] = targetRunes[0]
+		}
+	}
+	return res
 }

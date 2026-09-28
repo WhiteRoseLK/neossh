@@ -52,6 +52,16 @@ func commandKey(event *tcell.EventKey) rune {
 	return normalizeGlobalHotkey(event.Rune())
 }
 
+func (t *tui) resolveCommandKey(event *tcell.EventKey) rune {
+	r := event.Rune()
+	if t != nil && t.customKeybindings != nil {
+		if mapped, ok := t.customKeybindings[r]; ok {
+			return mapped
+		}
+	}
+	return commandKey(event)
+}
+
 // hotkeyMap maps each rune to its normalized command rune.
 // Keys that must be case-sensitive have separate entries; keys that fold
 // to lowercase share one target. This replaces a large switch so that
@@ -164,7 +174,7 @@ func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
-	cmd := commandKey(event)
+	cmd := t.resolveCommandKey(event)
 	if t.readonly {
 		switch cmd {
 		case 'a', 'e', 'd', 'C', 'y', 'p', 'v', 'K', 't', 'i', 'I', 'm', 'l', 'u':
@@ -1491,20 +1501,59 @@ func (t *tui) findServerByAlias(alias string) (domain.Server, bool) {
 }
 
 func (t *tui) showSSHErrorModal(alias, errMsg string) {
+	var srvPtr *domain.Server
+	if server, ok := t.findServerByAlias(alias); ok {
+		srvPtr = &server
+	}
+	title, msg := formatSSHErrorMessage(srvPtr, alias, errMsg)
+	t.showErrorModal(title, msg)
+}
+
+func formatSSHErrorMessage(server *domain.Server, alias, rawErr string) (string, string) {
 	title := fmt.Sprintf("SSH connection to %q failed", alias)
-	msg := errMsg
+	trimmedErr := strings.TrimSpace(rawErr)
+	if trimmedErr == "" {
+		trimmedErr = "Unknown error or connection was terminated without output."
+	}
+
+	var hints []string
 
 	// Detect if host has an expired SSH certificate
-	if server, ok := t.findServerByAlias(alias); ok {
-		if cert := domain.InspectServerCertificate(server); cert != nil && cert.Status == domain.CertStatusExpired {
+	if server != nil {
+		if cert := domain.InspectServerCertificate(*server); cert != nil && cert.Status == domain.CertStatusExpired {
 			ago := domain.FormatDuration(cert.TimeExpiredAgo)
-			certWarning := fmt.Sprintf("[red::b]⚠ SSH Certificate Expired[-]\nThe SSH certificate %q expired %s ago (valid until %s).\nAuthentication likely failed due to the expired certificate.\n\n[white::b]SSH Error:[-]\n",
-				cert.Path, ago, cert.ValidBefore.Format("2006-01-02 15:04:05"))
-			msg = certWarning + errMsg
+			hints = append(hints, fmt.Sprintf("[red::b]⚠ SSH Certificate Expired[-]\nCertificate %q expired %s ago (valid until %s).\nAuthentication likely failed due to the expired certificate.",
+				cert.Path, ago, cert.ValidBefore.Format("2006-01-02 15:04:05")))
 		}
 	}
 
-	t.showErrorModal(title, msg)
+	lower := strings.ToLower(trimmedErr)
+	switch {
+	case strings.Contains(lower, "host key verification failed"):
+		hints = append(hints, "[yellow::b]🔑 Host Key Mismatch[-]\nThe host key for this server does not match your known_hosts file.\nIf the host was recently re-installed, remove the old key with:\n  ssh-keygen -R <hostname>")
+	case strings.Contains(lower, "permission denied"):
+		hints = append(hints, "[yellow::b]🔒 Authentication Refused[-]\nThe remote host denied access with the configured identity key or credentials.\nCheck User, IdentityFile, or Password settings (press 'e' to edit).")
+	case strings.Contains(lower, "connection refused"):
+		hints = append(hints, "[yellow::b]🚫 Connection Refused[-]\nThe remote host refused the connection on the configured port.\nEnsure sshd is running and the port is correct.")
+	case strings.Contains(lower, "connection timed out") || strings.Contains(lower, "operation timed out"):
+		hints = append(hints, "[yellow::b]⏱ Connection Timed Out[-]\nNo response was received from the remote server.\nCheck network connectivity, VPN connection, or firewall rules.")
+	case strings.Contains(lower, "could not resolve hostname"):
+		hints = append(hints, "[yellow::b]🌐 DNS Resolution Error[-]\nThe hostname could not be resolved by your system's DNS.\nVerify the HostName field in your SSH config.")
+	case strings.Contains(lower, "kex_exchange_identification") || strings.Contains(lower, "proxycommand") || strings.Contains(lower, "proxyjump"):
+		hints = append(hints, "[yellow::b]🔀 Proxy / Bastion Error[-]\nFailed to negotiate connection through configured ProxyJump or ProxyCommand.")
+	case strings.HasPrefix(lower, "exit status"):
+		hints = append(hints, "[yellow::b]ℹ Non-Zero Exit Code[-]\nSSH process exited abnormally without specific stderr output.\nRun 'neossh -c "+alias+"' in a terminal for verbose output.")
+	}
+
+	var sb strings.Builder
+	for _, hint := range hints {
+		sb.WriteString(hint)
+		sb.WriteString("\n\n")
+	}
+	sb.WriteString("[white::b]SSH Output:[-]\n")
+	sb.WriteString(trimmedErr)
+
+	return title, sb.String()
 }
 
 func (t *tui) showEditTagsForm(server domain.Server) {
