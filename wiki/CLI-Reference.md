@@ -98,7 +98,7 @@ neossh completion fish
 neossh completion powershell
 ```
 
-See [Shell Completion](shell-completion.md) for installation instructions.
+See [[Shell Autocompletion|Shell-Completion]] for installation instructions.
 
 ---
 
