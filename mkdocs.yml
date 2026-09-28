@@ -1,5 +1,4 @@
 site_name: neossh
-site_url: https://whiteroseLK.github.io/neossh
 site_description: >-
   An interactive, keyboard-driven SSH manager for your terminal.
   Manage, connect, and configure servers from ~/.ssh/config with ease.
