@@ -47,6 +47,18 @@ func (m *mockServerRepo) DiscoverKnownHosts(path string) ([]domain.Server, domai
 func (m *mockServerRepo) ImportKnownHosts(path string) (domain.ImportResult, error) {
 	return domain.ImportResult{}, nil
 }
+func (m *mockServerRepo) ListKnownHostRecords(string) ([]domain.KnownHostRecord, error) {
+	return nil, nil
+}
+func (m *mockServerRepo) RemoveKnownHost(string, string, int) (string, int, error) {
+	return "", 0, nil
+}
+func (m *mockServerRepo) RemoveKnownHostByLine(string, int) (string, error) {
+	return "", nil
+}
+func (m *mockServerRepo) ScanAndAddKnownHost(string, string, int) (*domain.KnownHostRecord, error) {
+	return nil, nil
+}
 func (m *mockServerRepo) GetTheme() (string, error)              { return "", nil }
 func (m *mockServerRepo) SaveTheme(theme string) error           { return nil }
 func (m *mockServerRepo) GetPreConnectCommand() (string, error)  { return "", nil }

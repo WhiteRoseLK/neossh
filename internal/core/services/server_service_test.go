@@ -57,6 +57,22 @@ func (m *mockServerRepository) ImportKnownHosts(string) (domain.ImportResult, er
 	return domain.ImportResult{Discovered: 2, Imported: 1, Skipped: 1}, nil
 }
 
+func (m *mockServerRepository) ListKnownHostRecords(string) ([]domain.KnownHostRecord, error) {
+	return nil, nil
+}
+
+func (m *mockServerRepository) RemoveKnownHost(string, string, int) (string, int, error) {
+	return "known_hosts.old", 1, nil
+}
+
+func (m *mockServerRepository) RemoveKnownHostByLine(string, int) (string, error) {
+	return "known_hosts.old", nil
+}
+
+func (m *mockServerRepository) ScanAndAddKnownHost(string, string, int) (*domain.KnownHostRecord, error) {
+	return &domain.KnownHostRecord{HostPattern: "1.1.1.1", KeyType: "ssh-ed25519", Fingerprint: "SHA256:abc"}, nil
+}
+
 func (m *mockServerRepository) DeleteServer(domain.Server) error { return nil }
 
 func (m *mockServerRepository) SetPinned(string, bool) error { return nil }

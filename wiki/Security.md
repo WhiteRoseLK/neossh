@@ -54,6 +54,15 @@ When using `neossh export`, the following items are **never** included in bundle
     - *One-time snapshot*: Before neossh makes its first change, it creates `config.original.backup`. This file is never overwritten.
     - *Rolling backups*: On each save, neossh creates a timestamped backup (`~/.ssh/config-<timestamp>-neossh.backup`), keeping the 10 most recent.
 
+## Host Key Verification & Remediation
+
+When connecting to servers, OpenSSH verifies remote host keys against `~/.ssh/known_hosts`. If a host key has changed (e.g. after server re-installation or hardware replacement):
+
+- **1-Click Remediation**: neossh displays an interactive diagnostic dialog identifying the offending key file, line number, and remote fingerprint, providing 1-click actions:
+  - **Purge Old Key**: Safely removes the old key entry with automatic backup to `~/.ssh/known_hosts.old`.
+  - **Accept & Reconnect**: Captures the new host key, adds it to `known_hosts`, and immediately reconnects.
+- **Known Hosts Manager (<kbd>Shift+I</kbd>)**: An interactive browser to search, inspect, and delete obsolete entries from `~/.ssh/known_hosts`.
+
 ## Reporting Security Issues
 
 If you discover a security vulnerability, please report it responsibly by opening a [GitHub Issue](https://github.com/WhiteRoseLK/neossh/issues) or contacting the maintainers directly.

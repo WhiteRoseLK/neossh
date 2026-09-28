@@ -99,6 +99,22 @@ func (m *mockReadOnlyService) ImportKnownHosts(string) (domain.ImportResult, err
 	return domain.ImportResult{}, nil
 }
 
+func (m *mockReadOnlyService) ListKnownHostRecords(string) ([]domain.KnownHostRecord, error) {
+	return nil, nil
+}
+
+func (m *mockReadOnlyService) RemoveKnownHost(string, string, int) (string, int, error) {
+	return "known_hosts.old", 1, nil
+}
+
+func (m *mockReadOnlyService) RemoveKnownHostByLine(string, int) (string, error) {
+	return "known_hosts.old", nil
+}
+
+func (m *mockReadOnlyService) ScanAndAddKnownHost(string, string, int) (*domain.KnownHostRecord, error) {
+	return &domain.KnownHostRecord{HostPattern: "1.1.1.1", KeyType: "ssh-ed25519", Fingerprint: "SHA256:abc"}, nil
+}
+
 func (m *mockReadOnlyService) GetTheme() (string, error) {
 	return "dark", nil
 }
