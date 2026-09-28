@@ -119,9 +119,39 @@ When native OS credential keyrings (macOS Keychain, Linux Secret Service, Window
 
 ---
 
-## 5. Backups
+## 5. `~/.config/neossh/snippets.json`
+
+Stores the command snippets library with parameter placeholders (`{{param}}` or `<param>`), descriptions, and categorization tags.
+
+```json
+[
+  {
+    "id": "snip-sys-uptime",
+    "name": "System Load & Uptime",
+    "command": "uptime && free -h",
+    "description": "Inspect remote load average and memory",
+    "tags": ["sysadmin", "monitoring"]
+  },
+  {
+    "id": "snip-systemd-restart",
+    "name": "Restart Systemd Service",
+    "command": "sudo systemctl restart {{service}}",
+    "description": "Prompt for service name and restart daemon",
+    "tags": ["systemd", "ops"]
+  }
+]
+```
+
+- Permissions are strictly set to `0600`.
+- Override with the `NEOSSH_SNIPPETS_FILE` environment variable.
+- Defaults are automatically populated on first run if no snippets file exists.
+
+---
+
+## 6. Backups
 
 To safeguard against data loss, `neossh` creates backups automatically before making any changes:
 
 - **`config.original.backup`**: Created the first time `neossh` ever writes to your `~/.ssh/config`. It is permanently preserved and never modified.
 - **`config-<timestamp>-neossh.backup`**: Created immediately before every write operation. `neossh` rotates these rolling backups and keeps the 10 most recent.
+
