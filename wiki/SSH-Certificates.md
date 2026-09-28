@@ -101,7 +101,7 @@ Supported comment prefixes:
 
 ## Token Expansions
 
-Just like [Pre-Connect Hooks](pre-connect-hooks.md), certificate renewal commands support dynamic tokens:
+Just like [[Pre-Connect Hooks|Pre-Connect-Hooks]], certificate renewal commands support dynamic tokens:
 
 | Token | Replaced With | Example |
 |---|---|---|

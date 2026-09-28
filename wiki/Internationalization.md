@@ -63,4 +63,4 @@ To contribute a new language or improve existing translations:
 
 1. Fork the repository: `https://github.com/WhiteRoseLK/neossh`
 2. Create or update `internal/adapters/ui/i18n/locales/<lang_code>.json` using `en.json` as a template.
-3. Open a pull request following our [Contribution Guidelines](../contributing.md).
+3. Open a pull request following our [Contribution Guidelines](https://github.com/WhiteRoseLK/neossh/blob/main/CONTRIBUTING.md).

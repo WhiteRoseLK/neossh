@@ -1,29 +1,29 @@
 ### 🚀 Getting Started
 * [[Home]]
 * [[Installation]]
-* [[Quick-Start|Quick Start]]
+* [[Quick Start|Quick-Start]]
 
 ### 📖 User Guide
-* [[Server-Management|Server Management]]
-* [[Search-and-Navigation|Search & Navigation]]
-* [[SSH-Configuration|SSH Configuration & Safety]]
-* [[Key-Management|Key Management & Git]]
-* [[SFTP-and-File-Transfer|SFTP & File Transfer]]
-* [[Port-Forwarding-and-Tunnels|Port Forwarding & Tunnels]]
-* [[SSHFS-Remote-Mounts|SSHFS Remote Mounts]]
-* [[Backup-and-Export|Backup & Export Bundle]]
-* [[Pre-Connect-Hooks|Pre-Connect Hooks]]
-* [[Password-Authentication|Password Auth (sshpass)]]
-* [[SSH-Certificates|SSH Certificates]]
-* [[Tags-and-Config-Comments|Tags & Comments]]
-* [[Internationalization|Internationalization (i18n)]]
+* [[Server Management|Server-Management]]
+* [[Search & Navigation|Search-and-Navigation]]
+* [[SSH Configuration & Safety|SSH-Configuration]]
+* [[Key Management & Git|Key-Management]]
+* [[SFTP & File Transfer|SFTP-and-File-Transfer]]
+* [[Port Forwarding & Tunnels|Port-Forwarding-and-Tunnels]]
+* [[SSHFS Remote Mounts|SSHFS-Remote-Mounts]]
+* [[Backup & Export Bundle|Backup-and-Export]]
+* [[Pre-Connect Hooks|Pre-Connect-Hooks]]
+* [[Password Auth (sshpass)|Password-Authentication]]
+* [[SSH Certificates|SSH-Certificates]]
+* [[Tags & Comments|Tags-and-Config-Comments]]
+* [[Internationalization|Internationalization]]
 
 ### ⚙️ References
-* [[CLI-Reference|CLI Flags & Options]]
-* [[Keybindings-Reference|Keybindings]]
-* [[Configuration-Files|Configuration Files Layout]]
-* [[Shell-Completion|Shell Autocompletion]]
-* [[Security|Security Policy]]
+* [[CLI Flags & Options|CLI-Reference]]
+* [[Keybindings|Keybindings-Reference]]
+* [[Configuration Files Layout|Configuration-Files]]
+* [[Shell Autocompletion|Shell-Completion]]
+* [[Security Policy|Security]]
 
 ---
 [GitHub Repository](https://github.com/WhiteRoseLK/neossh)
