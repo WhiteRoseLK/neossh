@@ -60,6 +60,7 @@ var (
 	passwordFlag      string
 	pingWatchFlag     bool
 	pingIntervalFlag  int
+	setupFlag         bool
 
 	rootCmd = newRootCmd()
 )
@@ -76,6 +77,7 @@ type rootOptions struct {
 	isPingWatch     bool
 	isPingWatchSet  bool
 	pingIntervalSec int
+	isSetup         bool
 }
 
 func parseRootOptions(cmd *cobra.Command, args []string) rootOptions {
@@ -139,6 +141,11 @@ func parseRootOptions(cmd *cobra.Command, args []string) rootOptions {
 		pingIntervalSec = pi
 	}
 
+	isSetup := setupFlag
+	if s, err := cmd.Flags().GetBool("setup"); err == nil && s {
+		isSetup = true
+	}
+
 	return rootOptions{
 		isReadonly:      isReadonly,
 		filter:          filter,
@@ -151,6 +158,7 @@ func parseRootOptions(cmd *cobra.Command, args []string) rootOptions {
 		isPingWatch:     isPingWatch,
 		isPingWatchSet:  isPingWatchSet,
 		pingIntervalSec: pingIntervalSec,
+		isSetup:         isSetup,
 	}
 }
 
@@ -260,6 +268,7 @@ func newRootCmd() *cobra.Command {
 				AutoPingInterval:   opts.pingIntervalSec,
 				ServerRepo:         serverRepo,
 				GitService:         gitService,
+				SetupMode:          opts.isSetup,
 			})
 
 			return tui.Run()
@@ -339,6 +348,9 @@ func newRootCmd() *cobra.Command {
 	cmd.PersistentFlags().IntVar(
 		&pingIntervalFlag, "ping-interval", 0,
 		"interval in seconds for periodic background ping watch mode (default: 60)",
+	)
+	cmd.PersistentFlags().BoolVar(
+		&setupFlag, "setup", false, "launch interactive onboarding wizard for companion tools",
 	)
 
 	cmd.ValidArgsFunction = func(

@@ -381,6 +381,16 @@ func (r *Repository) SaveFileManager(tool string) error {
 	return r.metadataManager.SaveSettings(settings)
 }
 
+// GetFirstRunCompleted returns whether onboarding setup has been completed.
+func (r *Repository) GetFirstRunCompleted() (bool, error) {
+	return r.metadataManager.GetFirstRunCompleted()
+}
+
+// SaveFirstRunCompleted saves the onboarding setup completion flag.
+func (r *Repository) SaveFirstRunCompleted(completed bool) error {
+	return r.metadataManager.SaveFirstRunCompleted(completed)
+}
+
 func (r *Repository) GetSnippets() ([]domain.Snippet, error) {
 	if r.snippetManager == nil {
 		r.snippetManager = NewSnippetManager("")

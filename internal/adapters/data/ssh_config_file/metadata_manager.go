@@ -31,6 +31,7 @@ type Settings struct {
 	PreConnectCommand  string `json:"pre_connect_command,omitempty"`
 	DefaultIdentityKey string `json:"default_identity_key,omitempty"`
 	FileManager        string `json:"file_manager,omitempty"`
+	FirstRunCompleted  bool   `json:"first_run_completed,omitempty"`
 }
 
 type ServerMetadata struct {
@@ -166,6 +167,23 @@ func (m *metadataManager) SaveSettings(settings Settings) error {
 	}
 	file.Settings = settings
 	return m.saveFile(file)
+}
+
+func (m *metadataManager) GetFirstRunCompleted() (bool, error) {
+	settings, err := m.GetSettings()
+	if err != nil {
+		return false, err
+	}
+	return settings.FirstRunCompleted, nil
+}
+
+func (m *metadataManager) SaveFirstRunCompleted(completed bool) error {
+	settings, err := m.GetSettings()
+	if err != nil {
+		settings = Settings{}
+	}
+	settings.FirstRunCompleted = completed
+	return m.SaveSettings(settings)
 }
 
 func (m *metadataManager) updateServer(server domain.Server, oldAlias string) error {

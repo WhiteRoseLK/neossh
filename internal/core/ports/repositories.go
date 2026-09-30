@@ -45,4 +45,6 @@ type ServerRepository interface {
 	GetSnippets() ([]domain.Snippet, error)
 	SaveSnippet(snippet domain.Snippet) error
 	DeleteSnippet(id string) error
+	GetFirstRunCompleted() (bool, error)
+	SaveFirstRunCompleted(completed bool) error
 }
