@@ -1288,12 +1288,18 @@ func (sf *ServerForm) getDefaultValues() ServerFormData {
 			HashKnownHosts:              server.HashKnownHosts,
 			VisualHostKey:               server.VisualHostKey,
 			PreConnectCommand:           server.PreConnectCommand,
-			LocalCommand:                server.LocalCommand,
-			PermitLocalCommand:          server.PermitLocalCommand,
-			EscapeChar:                  server.EscapeChar,
-			SendEnv:                     strings.Join(server.SendEnv, ", "),
-			SetEnv:                      strings.Join(server.SetEnv, ", "),
-			LogLevel:                    server.LogLevel,
+			SyncDotfilesOnConnect: func() string {
+				if server.SyncDotfilesOnConnect {
+					return "yes"
+				}
+				return "no"
+			}(),
+			LocalCommand:       server.LocalCommand,
+			PermitLocalCommand: server.PermitLocalCommand,
+			EscapeChar:         server.EscapeChar,
+			SendEnv:            strings.Join(server.SendEnv, ", "),
+			SetEnv:             strings.Join(server.SetEnv, ", "),
+			LogLevel:           server.LogLevel,
 		}
 	}
 	// For new servers, use empty values instead of SSH defaults
@@ -1386,10 +1392,11 @@ func (sf *ServerForm) getDefaultValues() ServerFormData {
 		VisualHostKey:         "",
 
 		// Command execution
-		PreConnectCommand:  "",
-		LocalCommand:       "",
-		PermitLocalCommand: "",
-		EscapeChar:         "",
+		PreConnectCommand:     "",
+		SyncDotfilesOnConnect: "no",
+		LocalCommand:          "",
+		PermitLocalCommand:    "",
+		EscapeChar:            "",
 
 		// Environment
 		SendEnv: "",
@@ -1819,6 +1826,12 @@ func (sf *ServerForm) createAdvancedForm() {
 
 	form.AddTextView("\n[yellow]▶ Command Execution[-]", "", 0, 1, true, false)
 	sf.addInputFieldWithHelp(form, "PreConnectCommand:", "PreConnectCommand", defaultValues.PreConnectCommand, 40, GetFieldPlaceholder("PreConnectCommand"))
+
+	// SyncDotfilesOnConnect dropdown
+	syncDotfilesOptions := createOptionsWithDefault("SyncDotfilesOnConnect", []string{"", "yes", "no"})
+	syncDotfilesIndex := sf.findOptionIndex(syncDotfilesOptions, defaultValues.SyncDotfilesOnConnect)
+	sf.addDropDownWithHelp(form, "SyncDotfilesOnConnect:", "SyncDotfilesOnConnect", syncDotfilesOptions, syncDotfilesIndex)
+
 	sf.addInputFieldWithHelp(form, "LocalCommand:", "LocalCommand", defaultValues.LocalCommand, 40, GetFieldPlaceholder("LocalCommand"))
 
 	// PermitLocalCommand dropdown
@@ -1939,10 +1952,11 @@ type ServerFormData struct {
 	VisualHostKey               string
 
 	// Command execution
-	PreConnectCommand  string
-	LocalCommand       string
-	PermitLocalCommand string
-	EscapeChar         string
+	PreConnectCommand     string
+	SyncDotfilesOnConnect string
+	LocalCommand          string
+	PermitLocalCommand    string
+	EscapeChar            string
 
 	// Environment settings
 	SendEnv string
@@ -2061,10 +2075,11 @@ func (sf *ServerForm) getFormData() ServerFormData {
 		HashKnownHosts:           getDropdownValue("HashKnownHosts:"),
 		VisualHostKey:            getDropdownValue("VisualHostKey:"),
 		// Command execution
-		PreConnectCommand:  getFieldText("PreConnectCommand:"),
-		LocalCommand:       getFieldText("LocalCommand:"),
-		PermitLocalCommand: getDropdownValue("PermitLocalCommand:"),
-		EscapeChar:         getFieldText("EscapeChar:"),
+		PreConnectCommand:     getFieldText("PreConnectCommand:"),
+		SyncDotfilesOnConnect: getDropdownValue("SyncDotfilesOnConnect:"),
+		LocalCommand:          getFieldText("LocalCommand:"),
+		PermitLocalCommand:    getDropdownValue("PermitLocalCommand:"),
+		EscapeChar:            getFieldText("EscapeChar:"),
 		// Environment settings
 		SendEnv: getFieldText("SendEnv:"),
 		SetEnv:  getFieldText("SetEnv:"),
@@ -2479,6 +2494,7 @@ func (sf *ServerForm) dataToServer(data ServerFormData) domain.Server {
 		HashKnownHosts:              data.HashKnownHosts,
 		VisualHostKey:               data.VisualHostKey,
 		PreConnectCommand:           data.PreConnectCommand,
+		SyncDotfilesOnConnect:       strings.EqualFold(data.SyncDotfilesOnConnect, "yes") || strings.EqualFold(data.SyncDotfilesOnConnect, "true"),
 		LocalCommand:                data.LocalCommand,
 		PermitLocalCommand:          data.PermitLocalCommand,
 		EscapeChar:                  data.EscapeChar,

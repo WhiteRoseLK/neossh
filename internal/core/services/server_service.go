@@ -62,6 +62,7 @@ type serverService struct {
 	newFileManagerCommand func(tool string, args []string) *exec.Cmd
 	newHookCommand        func(cmdStr string) *exec.Cmd
 	newSSHPassCommand     func(sshpassPath, pwd string, sshCmd *exec.Cmd) *exec.Cmd
+	newChezmoiCommand     func(args ...string) *exec.Cmd
 	lookPath              func(file string) (string, error)
 }
 
@@ -86,6 +87,13 @@ func WithCredentialStore(cs ports.CredentialStore) ServerServiceOption {
 func WithLookPath(lp func(string) (string, error)) ServerServiceOption {
 	return func(s *serverService) {
 		s.lookPath = lp
+	}
+}
+
+// WithChezmoiCommand sets the command factory for running chezmoi (useful in tests).
+func WithChezmoiCommand(factory func(args ...string) *exec.Cmd) ServerServiceOption {
+	return func(s *serverService) {
+		s.newChezmoiCommand = factory
 	}
 }
 
@@ -142,6 +150,10 @@ func NewServerService(logger *zap.SugaredLogger, sr ports.ServerRepository, opts
 			}
 			//nolint:gosec // G204: intentional user pre-connect command hook
 			return exec.Command("sh", "-c", cmdStr)
+		},
+		newChezmoiCommand: func(args ...string) *exec.Cmd {
+			//nolint:gosec // G204: intentional execution of chezmoi command
+			return exec.Command("chezmoi", args...)
 		},
 	}
 	for _, opt := range opts {
@@ -886,6 +898,8 @@ func (s *serverService) SSH(alias string) error {
 		return err
 	}
 
+	s.maybeSyncDotfilesOnConnect(alias)
+
 	title := s.formatTerminalTitle(alias)
 	SetTerminalTitle(title)
 	defer RestoreTerminalTitle()
@@ -957,6 +971,8 @@ func (s *serverService) SSHWithArgs(alias string, extraArgs []string) error {
 	if err := s.runPreConnectHook(alias); err != nil {
 		return err
 	}
+
+	s.maybeSyncDotfilesOnConnect(alias)
 
 	title := s.formatTerminalTitle(alias)
 	SetTerminalTitle(title)
@@ -1344,6 +1360,145 @@ func (s *serverService) CopySSHKey(alias string) error {
 
 	s.logger.Infow("ssh-copy-id end", "alias", alias)
 	return nil
+}
+
+// IsChezmoiAvailable checks if the chezmoi executable is installed and available in PATH.
+func (s *serverService) IsChezmoiAvailable() bool {
+	lp := s.lookPath
+	if lp == nil {
+		lp = exec.LookPath
+	}
+	_, err := lp("chezmoi")
+	return err == nil
+}
+
+// SyncDotfiles streams 'chezmoi archive' and extracts it on the remote server via SSH.
+func (s *serverService) SyncDotfiles(alias string) error {
+	if s.readonly {
+		return ErrReadOnly
+	}
+	s.logger.Infow("sync dotfiles start", "alias", alias)
+	if strings.ContainsAny(alias, "*?") {
+		return fmt.Errorf("cannot sync dotfiles to a wildcard pattern block")
+	}
+
+	if !s.IsChezmoiAvailable() {
+		s.logger.Warnw("chezmoi binary not found", "alias", alias)
+		return fmt.Errorf("chezmoi not found; please install chezmoi (e.g. brew install chezmoi or https://www.chezmoi.io)")
+	}
+
+	// 1. Prepare chezmoi archive command
+	chezmoiFactory := s.newChezmoiCommand
+	if chezmoiFactory == nil {
+		chezmoiFactory = func(args ...string) *exec.Cmd {
+			//nolint:gosec // G204: intentional execution of chezmoi command
+			return exec.Command("chezmoi", args...)
+		}
+	}
+	chezmoiCmd := chezmoiFactory("archive")
+
+	// 2. Prepare ssh command: ssh -F <config> <alias> "tar -xf - -C ~"
+	remoteCmd := "tar -xf - -C ~"
+	sshFactory := s.newSSHExecCommand
+	var sshCmd *exec.Cmd
+	if sshFactory != nil {
+		sshCmd = sshFactory(alias, remoteCmd, false)
+	} else {
+		args := []string{}
+		if cfg := s.serverRepository.GetConfigFile(); cfg != "" {
+			args = append(args, "-F", cfg)
+		}
+		args = append(args, alias, remoteCmd)
+		//nolint:gosec // G204: intentional SSH command execution
+		sshCmd = exec.Command("ssh", args...)
+	}
+
+	var err error
+	sshCmd, err = s.wrapWithSSHPass(alias, sshCmd)
+	if err != nil {
+		s.logger.Errorw("sshpass wrap failed during dotfiles sync", "alias", alias, "error", err)
+		return err
+	}
+
+	// 3. Connect chezmoi output to ssh stdin via pipe
+	pipeReader, pipeWriter := io.Pipe()
+	chezmoiCmd.Stdout = pipeWriter
+	sshCmd.Stdin = pipeReader
+
+	var chezmoiStderr bytes.Buffer
+	var sshStderr bytes.Buffer
+	chezmoiCmd.Stderr = &chezmoiStderr
+	sshCmd.Stderr = &sshStderr
+
+	// Start both commands
+	if err := chezmoiCmd.Start(); err != nil {
+		_ = pipeWriter.Close()
+		_ = pipeReader.Close()
+		s.logger.Errorw("failed to start chezmoi archive", "error", err)
+		return fmt.Errorf("failed to start chezmoi archive: %w", err)
+	}
+
+	if err := sshCmd.Start(); err != nil {
+		_ = pipeWriter.Close()
+		_ = pipeReader.Close()
+		if chezmoiCmd.Process != nil {
+			_ = chezmoiCmd.Process.Kill()
+		}
+		s.logger.Errorw("failed to start remote ssh extraction", "error", err)
+		return fmt.Errorf("failed to start remote ssh extraction: %w", err)
+	}
+
+	// Wait for chezmoi to finish streaming archive, then close writer so ssh sees EOF
+	chezmoiErr := chezmoiCmd.Wait()
+	if chezmoiErr != nil {
+		_ = pipeWriter.CloseWithError(chezmoiErr)
+	} else {
+		_ = pipeWriter.Close()
+	}
+
+	// Wait for remote ssh command to finish
+	sshErr := sshCmd.Wait()
+	_ = pipeReader.Close()
+
+	if chezmoiErr != nil {
+		errMsg := strings.TrimSpace(chezmoiStderr.String())
+		if errMsg != "" {
+			return fmt.Errorf("chezmoi archive error: %s", errMsg)
+		}
+		return fmt.Errorf("chezmoi archive failed: %w", chezmoiErr)
+	}
+
+	if sshErr != nil {
+		errMsg := strings.TrimSpace(sshStderr.String())
+		if errMsg != "" {
+			return fmt.Errorf("remote extraction error: %s", errMsg)
+		}
+		return fmt.Errorf("remote extraction failed: %w", sshErr)
+	}
+
+	s.logger.Infow("sync dotfiles end", "alias", alias)
+	return nil
+}
+
+func (s *serverService) maybeSyncDotfilesOnConnect(alias string) {
+	s.serversMu.RLock()
+	var target *domain.Server
+	for i := range s.servers {
+		if s.servers[i].Alias == alias {
+			target = &s.servers[i]
+			break
+		}
+	}
+	s.serversMu.RUnlock()
+
+	if target == nil || !target.SyncDotfilesOnConnect {
+		return
+	}
+
+	s.logger.Infow("auto-sync dotfiles on connect triggered", "alias", alias)
+	if err := s.SyncDotfiles(alias); err != nil {
+		s.logger.Warnw("auto-sync dotfiles on connect failed; continuing connection", "alias", alias, "error", err)
+	}
 }
 
 // StartForward starts ssh port forwarding in the background and tracks the process.

@@ -317,3 +317,38 @@ func extractHostCertificateCommand(host *ssh_config.Host) string {
 	}
 	return ""
 }
+
+var syncDotfilesCommentRegex = regexp.MustCompile(`(?i)(?:^|[\s#;|,(\[])(?:sync-dotfiles|dotfiles-sync|dotfiles)\s*[:=]\s*(true|yes|on|1|false|no|off|0)`)
+
+func extractSyncDotfilesFromComment(comment string) (bool, bool) {
+	match := syncDotfilesCommentRegex.FindStringSubmatch(comment)
+	if len(match) >= 2 {
+		val := strings.ToLower(strings.TrimSpace(match[1]))
+		switch val {
+		case "true", "yes", "on", "1":
+			return true, true
+		case "false", "no", "off", "0":
+			return false, true
+		}
+	}
+	return false, false
+}
+
+func extractHostSyncDotfiles(host *ssh_config.Host) bool {
+	if val, ok := extractSyncDotfilesFromComment(host.EOLComment); ok {
+		return val
+	}
+	for _, node := range host.Nodes {
+		switch n := node.(type) {
+		case *ssh_config.Empty:
+			if val, ok := extractSyncDotfilesFromComment(n.Comment); ok {
+				return val
+			}
+		case *ssh_config.KV:
+			if val, ok := extractSyncDotfilesFromComment(n.Comment); ok {
+				return val
+			}
+		}
+	}
+	return false
+}

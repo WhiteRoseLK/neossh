@@ -93,9 +93,10 @@ var SSHFieldDefaults = map[string]string{
 	"CanonicalizePermittedCNAMEs": "", // none
 
 	// Command execution fields
-	"LocalCommand":       "", // none
-	"PermitLocalCommand": "no",
-	"EscapeChar":         "~",
+	"LocalCommand":          "", // none
+	"PermitLocalCommand":    "no",
+	"EscapeChar":            "~",
+	"SyncDotfilesOnConnect": "no",
 
 	// Environment fields
 	"SendEnv": "", // none
@@ -213,6 +214,8 @@ func GetFieldPlaceholder(fieldName string) string {
 		return "e.g., *.example.com:example.net"
 	case "PreConnectCommand":
 		return "e.g., vpn-connect.sh %h"
+	case "SyncDotfilesOnConnect":
+		return "yes or no"
 	case "Password":
 		return "optional password for sshpass"
 	case "LocalCommand":

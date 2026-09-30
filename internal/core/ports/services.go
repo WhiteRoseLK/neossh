@@ -57,6 +57,8 @@ type ServerService interface {
 	DeleteSnippet(id string) error
 	ExecuteRemoteCommand(alias string, command string) (string, error)
 	RunInteractiveRemoteCommand(alias string, command string) error
+	SyncDotfiles(alias string) error
+	IsChezmoiAvailable() bool
 }
 
 // GitService provides Git and SSH key management operations.

@@ -675,6 +675,14 @@ var fieldHelpData = map[string]FieldHelp{
 		Default:     "none",
 		Category:    "Command",
 	},
+	"SyncDotfilesOnConnect": {
+		Field:       "SyncDotfilesOnConnect",
+		Description: "Automatically synchronize chezmoi dotfiles to the remote host before initiating an SSH connection.",
+		Syntax:      "yes | no",
+		Examples:    []string{"no", "yes"},
+		Default:     "no",
+		Category:    "Command",
+	},
 	"LocalCommand": {
 		Field:       "LocalCommand",
 		Description: "Command to execute on local machine after connecting.",

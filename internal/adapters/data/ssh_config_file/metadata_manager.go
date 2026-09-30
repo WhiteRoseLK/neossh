@@ -34,14 +34,15 @@ type Settings struct {
 }
 
 type ServerMetadata struct {
-	Tags               []string `json:"tags,omitempty"`
-	Group              string   `json:"group,omitempty"`
-	LastSeen           string   `json:"last_seen,omitempty"`
-	PinnedAt           string   `json:"pinned_at,omitempty"`
-	Hidden             bool     `json:"hidden,omitempty"`
-	SSHCount           int      `json:"ssh_count,omitempty"`
-	PreConnectCommand  string   `json:"pre_connect_command,omitempty"`
-	CertificateCommand string   `json:"certificate_command,omitempty"`
+	Tags                  []string `json:"tags,omitempty"`
+	Group                 string   `json:"group,omitempty"`
+	LastSeen              string   `json:"last_seen,omitempty"`
+	PinnedAt              string   `json:"pinned_at,omitempty"`
+	Hidden                bool     `json:"hidden,omitempty"`
+	SSHCount              int      `json:"ssh_count,omitempty"`
+	PreConnectCommand     string   `json:"pre_connect_command,omitempty"`
+	CertificateCommand    string   `json:"certificate_command,omitempty"`
+	SyncDotfilesOnConnect bool     `json:"sync_dotfiles_on_connect,omitempty"`
 	// File is the absolute path of the SSH config file neossh should
 	// write to when editing or deleting this host. Populated lazily on
 	// the first successful write and used to suppress the ambiguity
@@ -204,6 +205,7 @@ func (m *metadataManager) updateServer(server domain.Server, oldAlias string) er
 
 	merged.PreConnectCommand = server.PreConnectCommand
 	merged.CertificateCommand = server.CertificateCommand
+	merged.SyncDotfilesOnConnect = server.SyncDotfilesOnConnect
 
 	metadata[server.Alias] = merged
 	return m.saveAll(metadata)

@@ -116,10 +116,11 @@ type Server struct {
 	VisualHostKey         string // yes, no
 
 	// Command execution
-	PreConnectCommand  string // hook or script executed locally before starting SSH session
-	LocalCommand       string
-	PermitLocalCommand string
-	EscapeChar         string // single character or "none"
+	PreConnectCommand     string // hook or script executed locally before starting SSH session
+	SyncDotfilesOnConnect bool   // automatically sync chezmoi dotfiles to remote server upon connect
+	LocalCommand          string
+	PermitLocalCommand    string
+	EscapeChar            string // single character or "none"
 
 	// Environment settings
 	SendEnv []string

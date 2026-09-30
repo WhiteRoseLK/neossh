@@ -369,6 +369,18 @@ func TestHelperProcess(t *testing.T) {
 				os.Exit(1)
 			case "hook-success":
 				os.Exit(0)
+			case "chezmoi-archive":
+				_, _ = os.Stdout.WriteString("fake-tar-archive-stream")
+				os.Exit(0)
+			case "chezmoi-fail":
+				_, _ = os.Stderr.WriteString("chezmoi: template execution failed\n")
+				os.Exit(1)
+			case "tar-extract":
+				_, _ = io.ReadAll(os.Stdin)
+				os.Exit(0)
+			case "tar-fail":
+				_, _ = os.Stderr.WriteString("tar: could not create directory: Permission denied\n")
+				os.Exit(2)
 			case "cert-fail":
 				_, _ = os.Stderr.WriteString("step-ca: token expired or unauthorized\n")
 				os.Exit(1)

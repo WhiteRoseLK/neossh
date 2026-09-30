@@ -475,6 +475,12 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 			name: "Environment & Execution",
 			fields: []fieldEntry{
 				{"PreConnectCommand", server.PreConnectCommand},
+				{"SyncDotfilesOnConnect", func() string {
+					if server.SyncDotfilesOnConnect {
+						return "yes"
+					}
+					return ""
+				}()},
 				{"LocalCommand", server.LocalCommand},
 				{"PermitLocalCommand", server.PermitLocalCommand},
 				{"EscapeChar", server.EscapeChar},
@@ -522,7 +528,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 			"\n[::b]%s[-]\n  Enter: SSH connect\n  f: Port forward\n  x: Stop forwarding\n"+
 				"  c: Copy SSH command\n  v: Paste SSH command\n  y: Clone server\n  h: Copy Host\n"+
 				"  g: Ping server\n  G: Ping all servers\n  W: Ping watch mode\n  P: Git SSH profile\n"+
-				"  C: Edit Key Comment\n  l/u: Load/Unload agent key\n  K: Install SSH Key\n"+
+				"  C: Edit Key Comment\n  l/u: Load/Unload agent key\n  K: Install SSH Key\n  D: Sync Dotfiles (chezmoi)\n"+
 				"  r: Refresh list\n  a: Add new server\n  e: Edit entry\n  t: Edit tags\n"+
 				"  d: Delete entry\n  p: Pin/Unpin",
 			cmdHeader,

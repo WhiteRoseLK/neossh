@@ -325,6 +325,9 @@ func (t *tui) handleActionKeys(cmd rune) bool {
 			t.handleInstallSSHKey()
 		}
 		return true
+	case 'D':
+		t.handleSyncDotfiles()
+		return true
 	case 'i':
 		t.handleImportKnownHosts()
 		return true
@@ -928,6 +931,73 @@ func (t *tui) handleInstallSSHKey() {
 		if copyErr != nil {
 			t.showErrorModal(fmt.Sprintf("Failed to install SSH key to %q", alias), copyErr.Error())
 		}
+	}
+}
+
+func (t *tui) showChezmoiMissingModal() {
+	text := "[yellow::b]chezmoi is not installed on this machine[-]\n\n" +
+		"chezmoi is required to synchronize your personal dotfiles to remote servers.\n\n" +
+		"[white]To install chezmoi:[-]\n" +
+		"  • macOS: [green]brew install chezmoi[-]\n" +
+		"  • Linux: [green]sh -c \"$(curl -fsLS get.chezmoi.io)\"[-]\n" +
+		"  • Website: [blue]https://www.chezmoi.io[-]"
+
+	modal := tview.NewModal().
+		SetText(text).
+		AddButtons([]string{"Close"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			t.handleModalClose()
+		})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
+}
+
+func (t *tui) showSyncDotfilesConfirmModal(server domain.Server) {
+	alias := server.Alias
+	text := fmt.Sprintf("Deploy your chezmoi dotfiles to [green]%s[-] via SSH?\n\nThis will stream 'chezmoi archive' and extract it into ~ on the remote server.", tview.Escape(alias))
+
+	modal := tview.NewModal().
+		SetText(text).
+		AddButtons([]string{"Sync", "Cancel"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			t.handleModalClose()
+			if buttonLabel == "Sync" {
+				t.showStatusTemp(fmt.Sprintf("Syncing dotfiles to %s…", alias))
+				var syncErr error
+				t.app.Suspend(func() {
+					if err := t.serverService.SyncDotfiles(alias); err != nil {
+						syncErr = err
+						t.logger.Errorw("failed to sync dotfiles", "alias", alias, "error", err)
+					}
+				})
+				t.app.Sync()
+				t.refreshServerList()
+				if syncErr != nil {
+					t.showErrorModal(fmt.Sprintf("Failed to sync dotfiles to %q", alias), syncErr.Error())
+				} else {
+					t.showStatusTemp(fmt.Sprintf("✓ Dotfiles successfully deployed to %s", alias))
+				}
+			}
+		})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
+}
+
+func (t *tui) handleSyncDotfiles() {
+	if t.readonly {
+		t.showReadonlyModal()
+		return
+	}
+	if server, ok := t.serverList.GetSelectedServer(); ok {
+		if server.IsWildcardServer() {
+			t.showErrorModal("Dotfiles Sync Warning", "Cannot sync dotfiles to a wildcard pattern block")
+			return
+		}
+		if !t.serverService.IsChezmoiAvailable() {
+			t.showChezmoiMissingModal()
+			return
+		}
+		t.showSyncDotfilesConfirmModal(server)
 	}
 }
 

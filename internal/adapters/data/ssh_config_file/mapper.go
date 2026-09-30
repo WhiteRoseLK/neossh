@@ -67,16 +67,17 @@ func (r *Repository) toDomainServer(lc *loadedConfig) []domain.Server {
 				primaryAlias := aliases[0]
 				isWildcard := strings.ContainsAny(primaryAlias, "*?")
 				servers = append(servers, domain.Server{
-					Alias:              primaryAlias,
-					Aliases:            aliases,
-					Port:               22,
-					IdentityFiles:      []string{},
-					SourceFile:         cf.path,
-					SourceFiles:        []string{cf.path},
-					IsWildcard:         isWildcard,
-					Tags:               extractHostTags(host),
-					PreConnectCommand:  extractHostPreConnectCommand(host),
-					CertificateCommand: extractHostCertificateCommand(host),
+					Alias:                 primaryAlias,
+					Aliases:               aliases,
+					Port:                  22,
+					IdentityFiles:         []string{},
+					SourceFile:            cf.path,
+					SourceFiles:           []string{cf.path},
+					IsWildcard:            isWildcard,
+					Tags:                  extractHostTags(host),
+					PreConnectCommand:     extractHostPreConnectCommand(host),
+					CertificateCommand:    extractHostCertificateCommand(host),
+					SyncDotfilesOnConnect: extractHostSyncDotfiles(host),
 				})
 				idx = len(servers) - 1
 				seenKeys[idx] = make(map[string]bool)
@@ -103,6 +104,9 @@ func (r *Repository) toDomainServer(lc *loadedConfig) []domain.Server {
 				}
 				if servers[idx].CertificateCommand == "" {
 					servers[idx].CertificateCommand = extractHostCertificateCommand(host)
+				}
+				if !servers[idx].SyncDotfilesOnConnect {
+					servers[idx].SyncDotfilesOnConnect = extractHostSyncDotfiles(host)
 				}
 			}
 
@@ -416,6 +420,9 @@ func (r *Repository) mergeMetadata(servers []domain.Server, metadata map[string]
 			}
 			if servers[i].CertificateCommand == "" && meta.CertificateCommand != "" {
 				servers[i].CertificateCommand = meta.CertificateCommand
+			}
+			if meta.SyncDotfilesOnConnect {
+				servers[i].SyncDotfilesOnConnect = true
 			}
 			servers[i].SSHCount = meta.SSHCount
 			if meta.File != "" {
