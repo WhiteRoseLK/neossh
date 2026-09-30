@@ -168,6 +168,8 @@ func (m *mockReadOnlyService) ExecuteRemoteCommand(string, string) (string, erro
 	return "", nil
 }
 func (m *mockReadOnlyService) RunInteractiveRemoteCommand(string, string) error { return nil }
+func (m *mockReadOnlyService) SyncDotfiles(string) error                        { return nil }
+func (m *mockReadOnlyService) IsChezmoiAvailable() bool                         { return true }
 
 func TestTUI_ReadOnlyState(t *testing.T) {
 	logger := zap.NewNop().Sugar()
