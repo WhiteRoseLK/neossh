@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/) and is automated with [Release Please](https://github.com/googleapis/release-please).
 
+## [2.3.0](https://github.com/WhiteRoseLK/neossh/compare/v2.2.0...v2.3.0) (2026-09-30)
+
+
+### Features
+
+* 1-click known_hosts conflict resolution and manager ([#135](https://github.com/WhiteRoseLK/neossh/issues/135)) ([535e860](https://github.com/WhiteRoseLK/neossh/commit/535e8607b171999a66a2b3ef9cd386182032174d))
+* add command snippets library and quick runner modal ([#139](https://github.com/WhiteRoseLK/neossh/issues/139)) ([71f0a91](https://github.com/WhiteRoseLK/neossh/commit/71f0a91434216a2fade48e361e1ca9a727e6e84f))
+* **cli:** first-launch onboarding wizard and --setup flag for companion tools ([#147](https://github.com/WhiteRoseLK/neossh/issues/147)) ([c6d56ef](https://github.com/WhiteRoseLK/neossh/commit/c6d56ef8c22f250960ad320c8d350d856edbb821))
+* **core:** dotfiles synchronization to remote servers via chezmoi ([#146](https://github.com/WhiteRoseLK/neossh/issues/146)) ([05c07b2](https://github.com/WhiteRoseLK/neossh/commit/05c07b2c53a20eda2197f8741148b01bbb618032))
+* live ssh-agent integration and status monitoring ([#137](https://github.com/WhiteRoseLK/neossh/issues/137)) ([786a42c](https://github.com/WhiteRoseLK/neossh/commit/786a42c8f23a36a3b4e4d5ecd77ef93df07fb71f))
+* multi-server selection and bulk operations ([#138](https://github.com/WhiteRoseLK/neossh/issues/138)) ([38cfa96](https://github.com/WhiteRoseLK/neossh/commit/38cfa969b8b5d77fed39b4250ac693a0f6e72d2f))
+* multi-session engine with overview dashboard and tabbed views ([#141](https://github.com/WhiteRoseLK/neossh/issues/141)) ([e5c78c2](https://github.com/WhiteRoseLK/neossh/commit/e5c78c2493a0f38a5f76f6bad2a93d1cc1f5526c))
+
+
+### Documentation
+
+* document multi-server selection and bulk operations ([aad529c](https://github.com/WhiteRoseLK/neossh/commit/aad529cdf80a3beeba3cbf2ca25e0e1611ea1f37))
+* fix table formatting and add companion guides to wiki ([#148](https://github.com/WhiteRoseLK/neossh/issues/148)) ([e0c4cd7](https://github.com/WhiteRoseLK/neossh/commit/e0c4cd7bdfd998abdc3bd4a2239cb1b72dbcdf69))
+
+
+### Maintenance & Dependencies
+
+* disable blank issues to enforce structured templates ([#142](https://github.com/WhiteRoseLK/neossh/issues/142)) ([65b927a](https://github.com/WhiteRoseLK/neossh/commit/65b927ae1a5a6ceb973d3697d63d0517d74e136c))
+
 ## [2.2.0](https://github.com/WhiteRoseLK/neossh/compare/v2.1.0...v2.2.0) (2026-09-28)
 
 
