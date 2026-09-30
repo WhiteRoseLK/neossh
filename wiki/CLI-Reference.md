@@ -16,6 +16,7 @@ neossh [command] [flags]
 | `[filter]` | | Optional positional argument to pre-filter server list | `""` |
 | `--filter <pattern>` | `-f` | Pre-filter server list by alias, hostname, or tag | `""` |
 | `--connect` | `-c` | Connect directly to matching server without launching full TUI picker | `false` |
+| `--setup` | | Launch interactive companion tools setup wizard (`chezmoi`, `yazi`, `ssh-copy-id`) | `false` |
 | `--import-known-hosts` | | Import newly discovered hosts from `known_hosts` into SSH config | `false` |
 | `--known-hosts <path>` | | Specify custom path to `known_hosts` file | `~/.ssh/known_hosts` |
 | `--git-ssh <key>` | | Configure Git SSH key for current repo (or globally) or view current setting | `""` |
@@ -108,6 +109,7 @@ See [[Shell Autocompletion|Shell-Completion]] for installation instructions.
 |---|---|
 | `NEOSSH_LANG` | Default UI language code (`en`, `fr`, `zh-CN`). |
 | `NEOSSH_DEFAULT_KEY` | Default SSH private key path for new host entries. |
+| `NEOSSH_SNIPPETS_FILE` | Path to custom command snippets JSON library (default: `~/.config/neossh/snippets.json`). |
 | `NEOSSH_PASSWORD` | Password for automated `sshpass` connection. |
 | `SSHPASS` | Standard fallback password variable for `sshpass`. |
 | `XDG_CONFIG_HOME` | Overrides base configuration directory (default: `~/.config`). |
@@ -152,4 +154,7 @@ neossh --import-known-hosts
 
 # 11. Custom SSH config path
 neossh --sshconfig ~/.ssh/config_staging -r
+
+# 12. Run interactive companion tools setup wizard
+neossh --setup
 ```

@@ -78,5 +78,7 @@ tag:prod user:root status:up web
 | `# certificate-command: <cmd>` | Certificate renewal command | `# certificate-command: step ssh login %u@%h` |
 | `# cert-command: <cmd>` | Alias for certificate renewal command | `# cert-command: vault write ...` |
 | `# cert-renew: <cmd>` | Alias for certificate renewal command | `# cert-renew: tsh login` |
+| `# sync-dotfiles: true` | Automatically stream dotfiles via `chezmoi archive` on connect | `# sync-dotfiles: true` |
+| `# dotfiles: true` | Alias for auto-syncing dotfiles on connect | `# dotfiles: true` |
 
 All comment directives are preserved verbatim across read and write operations.

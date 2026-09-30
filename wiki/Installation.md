@@ -112,4 +112,7 @@ sudo mv neossh /usr/local/bin/
 
 ---
 
-Next: check out the **[[Quick-Start]]** guide to get started!
+## Next Steps
+
+- Run `neossh` or `neossh --setup` to launch the interactive companion tools setup wizard (`chezmoi`, `yazi`, `ssh-copy-id`).
+- Check out the **[[Quick-Start]]** guide to get productive in 2 minutes!
