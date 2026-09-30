@@ -12,26 +12,28 @@
 
 | Section | Description |
 |---|---|
-| **[[Installation]]** | Install via Homebrew, AUR, prebuilt binaries, Scoop, Go install, or source |
-| **[[Quick Start|Quick-Start]]** | 2-minute guide to get productive with neossh |
-| **[[Server Management|Server-Management]]** | Add, edit, delete, pin, hide, clone, and organize servers into groups |
-| **[[Search & Navigation|Search-and-Navigation]]** | Fuzzy search, token filters (`tag:`, `user:`, `host:`), and panel shortcuts |
-| **[[SSH Configuration & Safety|SSH-Configuration]]** | Non-destructive writes, atomic saves, rolling backups, and `Include` support |
-| **[[Key Management & Git|Key-Management]]** | Autocomplete, default identity keys, Git SSH profiles, and FIDO2 badges |
-| **[[SFTP & File Transfer|SFTP-and-File-Transfer]]** | Built-in dual-pane WinSCP-style manager and external file transfer tools |
-| **[[Port Forwarding & Tunnels|Port-Forwarding-and-Tunnels]]** | Assistant for Local (`-L`), Remote (`-R`), and Dynamic SOCKS5 (`-D`) tunnels |
-| **[[SSHFS Remote Mounts|SSHFS-Remote-Mounts]]** | Mount remote filesystems locally with full SSH options |
-| **[[Backup & Export Bundle|Backup-and-Export]]** | Export configuration bundles with `--sanitize` for safe sharing |
-| **[[Pre-Connect Hooks|Pre-Connect-Hooks]]** | Automated scripts before connecting (VPN, Wake-on-LAN, tokens) |
-| **[[Password Authentication|Password-Authentication]]** | `sshpass` authentication backed by OS keyring or AES-256-GCM vault |
-| **[[SSH Certificates|SSH-Certificates]]** | Certificate status, expiration detection, and on-demand renewal |
-| **[[Tags & Comments|Tags-and-Config-Comments]]** | Synchronize metadata directly inside `~/.ssh/config` comments |
-| **[[Internationalization|Internationalization]]** | Multilingual UI support (English, French, Simplified Chinese) |
-| **[[CLI Flags & Options|CLI-Reference]]** | Complete command-line flags and options table |
-| **[[Keybindings Reference|Keybindings-Reference]]** | Complete keyboard shortcuts table |
-| **[[Configuration Files Layout|Configuration-Files]]** | Layout and purpose of `~/.ssh/config`, `metadata.json`, `settings.json`, `vault.json` |
-| **[[Shell Autocompletion|Shell-Completion]]** | Dynamic autocompletion for Bash, Zsh, Fish, and PowerShell |
-| **[[Security Policy|Security]]** | Credential security architecture and privacy design |
+| **[Installation](Installation)** | Install via Homebrew, AUR, prebuilt binaries, Scoop, Go install, or source |
+| **[Quick Start](Quick-Start)** | 2-minute guide to get productive with neossh |
+| **[Companion Tools Setup](Companion-Tools)** | Automated package manager detection & 1-click companion tools installer (`chezmoi`, `yazi`, `ssh-copy-id`) |
+| **[Server Management](Server-Management)** | Add, edit, delete, pin, hide, clone, and organize servers into groups |
+| **[Search & Navigation](Search-and-Navigation)** | Fuzzy search, token filters (`tag:`, `user:`, `host:`), and panel shortcuts |
+| **[SSH Configuration & Safety](SSH-Configuration)** | Non-destructive writes, atomic saves, rolling backups, and `Include` support |
+| **[Key Management & Git](Key-Management)** | Autocomplete, default identity keys, Git SSH profiles, and FIDO2 badges |
+| **[Dotfiles Sync (chezmoi)](Dotfiles-Sync)** | Deploy and sync personal dotfiles to remote hosts with zero remote dependencies |
+| **[SFTP & File Transfer](SFTP-and-File-Transfer)** | Built-in dual-pane WinSCP-style manager and external file transfer tools |
+| **[Port Forwarding & Tunnels](Port-Forwarding-and-Tunnels)** | Assistant for Local (`-L`), Remote (`-R`), and Dynamic SOCKS5 (`-D`) tunnels |
+| **[SSHFS Remote Mounts](SSHFS-Remote-Mounts)** | Mount remote filesystems locally with full SSH options |
+| **[Backup & Export Bundle](Backup-and-Export)** | Export configuration bundles with `--sanitize` for safe sharing |
+| **[Pre-Connect Hooks](Pre-Connect-Hooks)** | Automated scripts before connecting (VPN, Wake-on-LAN, tokens) |
+| **[Password Authentication](Password-Authentication)** | `sshpass` authentication backed by OS keyring or AES-256-GCM vault |
+| **[SSH Certificates](SSH-Certificates)** | Certificate status, expiration detection, and on-demand renewal |
+| **[Tags & Comments](Tags-and-Config-Comments)** | Synchronize metadata directly inside `~/.ssh/config` comments |
+| **[Internationalization](Internationalization)** | Multilingual UI support (English, French, Simplified Chinese) |
+| **[CLI Flags & Options](CLI-Reference)** | Complete command-line flags and options table |
+| **[Keybindings Reference](Keybindings-Reference)** | Complete keyboard shortcuts table |
+| **[Configuration Files Layout](Configuration-Files)** | Layout and purpose of `~/.ssh/config`, `metadata.json`, `settings.json`, `vault.json` |
+| **[Shell Autocompletion](Shell-Completion)** | Dynamic autocompletion for Bash, Zsh, Fish, and PowerShell |
+| **[Security Policy](Security)** | Credential security architecture and privacy design |
 
 ---
 

@@ -91,6 +91,16 @@ Host web1 web2 staging
 
 All aliases are indexed for fuzzy search and connection. They are preserved verbatim on writeback.
 
+## Dotfiles Synchronization (chezmoi)
+
+Deploy your personal configuration files and shell environment (`.bashrc`, `.zshrc`, `.tmux.conf`, `.vimrc`, etc.) to remote servers seamlessly with zero remote installation:
+
+- **1-Click Sync (<kbd>D</kbd>)**: Highlight any server in the Servers panel and press <kbd>D</kbd> (or <kbd>Shift+D</kbd>). A confirmation dialog displays the target server alias and details, streaming your local `chezmoi archive` directly over SSH into `tar -xf - -C ~`.
+- **Automatic Sync on Connect**: In the Add/Edit server form, set `SyncDotfilesOnConnect` to `yes` (persisted as `# sync-dotfiles: true` in your SSH configuration). Whenever you connect (<kbd>Enter</kbd>), neossh synchronizes your dotfiles before starting the interactive shell.
+- **Zero Remote Dependencies**: The remote host only needs the standard `tar` command (available on every Unix-like system). `chezmoi` is only required locally.
+
+For complete details, see [[Dotfiles Sync (chezmoi)|Dotfiles-Sync]].
+
 ## Active SSH Sessions Panel
 
 Press <kbd>2</kbd> to focus the Active Sessions panel. This panel tracks running SSH and background sessions with:

@@ -35,11 +35,12 @@ The single source of truth for host connections. `neossh` parses, edits, and wri
 `neossh` embeds metadata within comments:
 
 ```ssh-config
-Host prod-db # tags: prod, database # pin
+Host prod-db # tags: prod, database # pin # sync-dotfiles: true
     HostName 10.0.1.5
     User postgres
     # pre-connect: /usr/local/bin/check-vpn.sh %h
     # certificate-command: step ssh login %u@%h
+    # sync-dotfiles: true
 ```
 
 ---
@@ -54,6 +55,7 @@ Stores application preferences, configured tools, and saved tunnel profiles:
   "file_manager": "yazi",
   "auto_ping": true,
   "default_identity_key": "~/.ssh/id_ed25519",
+  "first_run_completed": true,
   "tunnel_profiles": {
     "prod-db": [
       {
@@ -76,6 +78,7 @@ Stores application preferences, configured tools, and saved tunnel profiles:
 | `file_manager` | string | SFTP file manager tool (`"internal"`, `"sftp"`, `"yazi"`, `"ranger"`, `"filezilla"`, or custom template) | `"sftp"` |
 | `auto_ping` | boolean | Automatically trigger parallel background pings at startup | `false` |
 | `default_identity_key` | string | Path to default private key prefilled on new server forms | `""` |
+| `first_run_completed` | boolean | Tracks whether the initial companion tools onboarding wizard has run | `false` |
 | `tunnel_profiles` | object | Saved port forwarding profiles mapped by server alias | `{}` |
 | `keybindings` | object | Custom keybinding overrides for actions (e.g. `{"add_server": "n", "clone_server": "c"}`) | `{}` |
 

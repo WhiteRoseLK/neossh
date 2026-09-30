@@ -22,6 +22,7 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 | <kbd>Shift+H</kbd> | **Toggle Hidden** | ✅ Yes | Toggle visibility of hidden servers in the list |
 | <kbd>p</kbd> | **Pin / Unpin** | 🔒 Blocked | Pin or unpin server to top of list |
 | <kbd>Shift+P</kbd> / <kbd>Ctrl+G</kbd> | **Git SSH Profiles** | 🔒 Blocked | Open Git SSH Key Configuration & Profile Switcher |
+| <kbd>Shift+D</kbd> / <kbd>D</kbd> | **Dotfiles Sync** | 🔒 Blocked | Deploy and sync personal dotfiles to remote host via `chezmoi archive` |
 | <kbd>t</kbd> | **Edit Tags / Bulk Tags** | 🔒 Blocked | Edit tags for focused server, or bulk edit tags across all selected servers |
 | <kbd>Shift+X</kbd> / <kbd>X</kbd> | **Command Snippets & Runner** | ✅ Yes | Open command snippets library & multi-server execution runner |
 | <kbd>Shift+T</kbd> | **Toggle Theme** | ✅ Yes | Cycle themes: Dark → Light → System |
@@ -56,6 +57,6 @@ This reference documents all keyboard shortcuts available inside the `neossh` in
 
 When launched with `--readonly` or `-r`:
 
-- All modifying actions (<kbd>a</kbd>, <kbd>e</kbd>, <kbd>d</kbd>, <kbd>y</kbd>, <kbd>v</kbd>, <kbd>t</kbd>, <kbd>Shift+C</kbd>, <kbd>Shift+K</kbd>, <kbd>i</kbd>, <kbd>p</kbd>, <kbd>l</kbd>, <kbd>u</kbd>, <kbd>Shift+P</kbd>) are safely blocked.
+- All modifying actions (<kbd>a</kbd>, <kbd>e</kbd>, <kbd>d</kbd>, <kbd>D</kbd>, <kbd>y</kbd>, <kbd>v</kbd>, <kbd>t</kbd>, <kbd>Shift+C</kbd>, <kbd>Shift+K</kbd>, <kbd>i</kbd>, <kbd>p</kbd>, <kbd>l</kbd>, <kbd>u</kbd>, <kbd>Shift+P</kbd>) are safely blocked.
 - Attempting any restricted keybinding displays a clear informational dialog explaining that read-only mode is active.
 - Safe exploration, search, SSH connecting, command copying, and monitoring operations remain fully accessible.

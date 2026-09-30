@@ -49,6 +49,7 @@ See **[[Search-and-Navigation]]** for the full filter syntax.
 | <kbd>a</kbd> | Add new server |
 | <kbd>e</kbd> | Edit selected server |
 | <kbd>d</kbd> | Delete selected server (with confirmation) |
+| <kbd>D</kbd> | Deploy and sync personal dotfiles via `chezmoi archive` |
 | <kbd>c</kbd> | Copy SSH command to system clipboard |
 | <kbd>o</kbd> | Open SCP command generator modal |
 | <kbd>M</kbd> | Open SSHFS remote mount generator modal |
@@ -64,6 +65,9 @@ See **[[Search-and-Navigation]]** for the full filter syntax.
 ## 6. CLI Shortcuts
 
 ```bash
+# Launch interactive companion tools setup wizard
+neossh --setup
+
 # Connect directly without opening the TUI picker
 neossh -c my-server
 

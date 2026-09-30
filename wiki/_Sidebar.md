@@ -2,12 +2,14 @@
 * [[Home]]
 * [[Installation]]
 * [[Quick Start|Quick-Start]]
+* [[Companion Tools Setup|Companion-Tools]]
 
 ### 📖 User Guide
 * [[Server Management|Server-Management]]
 * [[Search & Navigation|Search-and-Navigation]]
 * [[SSH Configuration & Safety|SSH-Configuration]]
 * [[Key Management & Git|Key-Management]]
+* [[Dotfiles Sync (chezmoi)|Dotfiles-Sync]]
 * [[SFTP & File Transfer|SFTP-and-File-Transfer]]
 * [[Port Forwarding & Tunnels|Port-Forwarding-and-Tunnels]]
 * [[SSHFS Remote Mounts|SSHFS-Remote-Mounts]]
