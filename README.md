@@ -38,6 +38,7 @@
 - 🛡️ **Config Safety & Non-Destructive Writes**: Atomic saves, rolling backups, and recursive OpenSSH `Include` directive support.
 - 📦 **Backup & Sanitized Export**: Archive configuration into `.tar.gz` bundles with `--sanitize` to strip private key paths and comments for safe team sharing.
 - 🚀 **Dotfiles Synchronization (chezmoi)**: 1-click deployment of personal dotfiles (<kbd>D</kbd>) to remote hosts via streaming tar archive with zero remote dependencies.
+- 🧭 **Companion Tools Onboarding Wizard**: Automated host package manager detection (`brew`, `apt`, `dnf`, `pacman`, `zypper`, `apk`, `winget`, `scoop`, `choco`) and 1-click installation of native companion tools (`chezmoi`, `yazi`, `ssh-copy-id`) on first launch or via `neossh --setup`.
 - 🪝 **Pre-Connect Hooks**: Automated local scripts before connecting (VPN bring-up, Wake-on-LAN, token refresh).
 - 🔑 **Secure Password Authentication**: Automated delivery via `sshpass` backed by native OS keyring (Keychain, Secret Service, Credential Manager) or AES-256-GCM local vault.
 - 🎨 **Themes & Internationalization**: Dark, Light, and System themes (<kbd>T</kbd>), with multilingual UI support (English, French, Simplified Chinese).
@@ -105,6 +106,9 @@ go install github.com/WhiteRoseLK/neossh/cmd@latest
 # Launch interactive TUI
 neossh
 
+# Run interactive companion tools setup wizard
+neossh --setup
+
 # Connect directly to a server without TUI picker
 neossh -c my-server
 
@@ -148,7 +152,7 @@ All in-depth documentation is organized in our [**GitHub Wiki**](https://github.
 
 | Category | Wiki Pages |
 |---|---|
-| **Getting Started** | [Installation](https://github.com/WhiteRoseLK/neossh/wiki/Installation) • [Quick Start](https://github.com/WhiteRoseLK/neossh/wiki/Quick-Start) |
+| **Getting Started** | [Installation](https://github.com/WhiteRoseLK/neossh/wiki/Installation) • [Quick Start](https://github.com/WhiteRoseLK/neossh/wiki/Quick-Start) • [Companion Tools Setup](https://github.com/WhiteRoseLK/neossh/wiki/Companion-Tools) |
 | **Guides** | [Server Management](https://github.com/WhiteRoseLK/neossh/wiki/Server-Management) • [Search & Navigation](https://github.com/WhiteRoseLK/neossh/wiki/Search-and-Navigation) • [SSH Configuration & Safety](https://github.com/WhiteRoseLK/neossh/wiki/SSH-Configuration) • [Key Management](https://github.com/WhiteRoseLK/neossh/wiki/Key-Management) • [Dotfiles Sync (chezmoi)](https://github.com/WhiteRoseLK/neossh/wiki/Dotfiles-Sync) • [SFTP & File Transfer](https://github.com/WhiteRoseLK/neossh/wiki/SFTP-and-File-Transfer) • [Port Forwarding & Tunnels](https://github.com/WhiteRoseLK/neossh/wiki/Port-Forwarding-and-Tunnels) • [SSHFS Remote Mounts](https://github.com/WhiteRoseLK/neossh/wiki/SSHFS-Remote-Mounts) • [Backup & Export](https://github.com/WhiteRoseLK/neossh/wiki/Backup-and-Export) • [Pre-Connect Hooks](https://github.com/WhiteRoseLK/neossh/wiki/Pre-Connect-Hooks) • [Password Auth (sshpass)](https://github.com/WhiteRoseLK/neossh/wiki/Password-Authentication) • [SSH Certificates](https://github.com/WhiteRoseLK/neossh/wiki/SSH-Certificates) • [Tags & Comments](https://github.com/WhiteRoseLK/neossh/wiki/Tags-and-Config-Comments) • [Internationalization (i18n)](https://github.com/WhiteRoseLK/neossh/wiki/Internationalization) |
 | **References** | [CLI Flags & Options](https://github.com/WhiteRoseLK/neossh/wiki/CLI-Reference) • [Keybindings Reference](https://github.com/WhiteRoseLK/neossh/wiki/Keybindings-Reference) • [Configuration Files Layout](https://github.com/WhiteRoseLK/neossh/wiki/Configuration-Files) • [Shell Autocompletion](https://github.com/WhiteRoseLK/neossh/wiki/Shell-Completion) • [Security Policy](https://github.com/WhiteRoseLK/neossh/wiki/Security) |
 

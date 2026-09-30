@@ -120,6 +120,8 @@ func (m *mockServerRepoForUI) SaveFileManager(_ string) error         { return n
 func (m *mockServerRepoForUI) GetSnippets() ([]domain.Snippet, error) { return nil, nil }
 func (m *mockServerRepoForUI) SaveSnippet(_ domain.Snippet) error     { return nil }
 func (m *mockServerRepoForUI) DeleteSnippet(_ string) error           { return nil }
+func (m *mockServerRepoForUI) GetFirstRunCompleted() (bool, error)    { return true, nil }
+func (m *mockServerRepoForUI) SaveFirstRunCompleted(_ bool) error     { return nil }
 
 func TestEditKeyComment(t *testing.T) {
 	app := tview.NewApplication()

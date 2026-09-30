@@ -49,6 +49,8 @@ type Config struct {
 	AutoPingInterval   int
 	ServerRepo         ports.ServerRepository
 	GitService         ports.GitService
+	CompanionService   ports.CompanionService
+	SetupMode          bool
 }
 
 type tui struct {
@@ -94,6 +96,8 @@ type tui struct {
 	customKeybindings        map[rune]rune
 	agentStatus              domain.SSHAgentStatus
 	agentStatusMu            sync.RWMutex
+	companionService         ports.CompanionService
+	setupMode                bool
 }
 
 func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, cfg ...Config) App {
@@ -109,6 +113,8 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 	var autoPingInterval int
 	var serverRepo ports.ServerRepository
 	var gitService ports.GitService
+	var companionService ports.CompanionService
+	var setupMode bool
 	if len(cfg) > 0 {
 		exitOnDisconnect = cfg[0].ExitOnDisconnect
 		readonly = cfg[0].ReadOnly
@@ -122,6 +128,12 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		autoPingInterval = cfg[0].AutoPingInterval
 		serverRepo = cfg[0].ServerRepo
 		gitService = cfg[0].GitService
+		companionService = cfg[0].CompanionService
+		setupMode = cfg[0].SetupMode
+	}
+
+	if companionService == nil && serverRepo != nil {
+		companionService = services.NewCompanionService(logger, serverRepo)
 	}
 
 	interval := time.Duration(autoPingInterval) * time.Second
@@ -135,6 +147,8 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		serverService:            ss,
 		serverRepo:               serverRepo,
 		gitService:               gitService,
+		companionService:         companionService,
+		setupMode:                setupMode,
 		version:                  version,
 		commit:                   commit,
 		readonly:                 readonly,
@@ -238,6 +252,9 @@ func (t *tui) Run() error {
 	t.bindEvents()
 	t.loadInitialData()
 	t.app.SetRoot(t.root, true)
+	if t.shouldShowOnboarding() {
+		t.showOnboardingWizard()
+	}
 	t.logger.Infow("starting TUI application", "version", t.version, "commit", t.commit)
 	if err := t.app.Run(); err != nil {
 		t.logger.Errorw("application run error", "error", err)
@@ -245,6 +262,35 @@ func (t *tui) Run() error {
 	}
 	t.stopThemeWatcher()
 	return nil
+}
+
+func (t *tui) shouldShowOnboarding() bool {
+	if t.setupMode {
+		return true
+	}
+	if t.readonly {
+		return false
+	}
+	if t.companionService != nil && t.companionService.IsFirstRun() {
+		return true
+	}
+	return false
+}
+
+func (t *tui) showOnboardingWizard() {
+	modal := NewOnboardingModal(t.app, t.companionService, func() {
+		if t.companionService != nil {
+			_ = t.companionService.MarkFirstRunCompleted()
+		}
+		t.handleModalClose()
+	}, func() {
+		if t.companionService != nil {
+			_ = t.companionService.MarkFirstRunCompleted()
+		}
+		t.handleModalClose()
+	})
+	t.app.SetRoot(modal, true)
+	t.app.SetFocus(modal)
 }
 
 func (t *tui) initializeI18n() {

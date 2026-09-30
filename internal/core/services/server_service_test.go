@@ -128,7 +128,9 @@ func (m *mockServerRepository) SaveDefaultIdentityKey(k string) error {
 
 func (m *mockServerRepository) GetFileManager() (string, error) { return "", nil }
 
-func (m *mockServerRepository) SaveFileManager(string) error { return nil }
+func (m *mockServerRepository) SaveFileManager(string) error        { return nil }
+func (m *mockServerRepository) GetFirstRunCompleted() (bool, error) { return true, nil }
+func (m *mockServerRepository) SaveFirstRunCompleted(bool) error    { return nil }
 
 func (m *mockServerRepository) RecordSSH(alias string) error {
 	m.recordCalls++

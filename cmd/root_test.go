@@ -1169,3 +1169,26 @@ func TestRootCmd_PingWatchFlags(t *testing.T) {
 		t.Errorf("expected pingIntervalSec=45, got %d", opts.pingIntervalSec)
 	}
 }
+
+func TestRootCmd_SetupFlag(t *testing.T) {
+	cmd := newRootCmd()
+
+	setupFlag := cmd.PersistentFlags().Lookup("setup")
+	if setupFlag == nil {
+		t.Fatal("expected persistent flag --setup to exist")
+	}
+
+	opts := parseRootOptions(cmd, []string{})
+	if opts.isSetup {
+		t.Errorf("expected isSetup=false by default")
+	}
+
+	cmd = newRootCmd()
+	if err := cmd.ParseFlags([]string{"--setup"}); err != nil {
+		t.Fatalf("failed to parse --setup: %v", err)
+	}
+	opts = parseRootOptions(cmd, []string{})
+	if !opts.isSetup {
+		t.Errorf("expected isSetup=true when --setup is passed")
+	}
+}

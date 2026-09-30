@@ -70,6 +70,8 @@ func (m *mockServerRepo) SaveFileManager(_ string) error         { return nil }
 func (m *mockServerRepo) GetSnippets() ([]domain.Snippet, error) { return nil, nil }
 func (m *mockServerRepo) SaveSnippet(_ domain.Snippet) error     { return nil }
 func (m *mockServerRepo) DeleteSnippet(_ string) error           { return nil }
+func (m *mockServerRepo) GetFirstRunCompleted() (bool, error)    { return true, nil }
+func (m *mockServerRepo) SaveFirstRunCompleted(bool) error       { return nil }
 
 func TestGitService_IsGitRepository(t *testing.T) {
 	logger := zap.NewNop().Sugar()

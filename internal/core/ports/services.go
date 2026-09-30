@@ -84,3 +84,12 @@ type GitService interface {
 	// Server repository resolution
 	SetServerRepository(repo ServerRepository)
 }
+
+// CompanionService provides companion tools detection, installation, and onboarding lifecycle management.
+type CompanionService interface {
+	DetectPackageManager() domain.PackageManagerInfo
+	CheckCompanionTools() []domain.CompanionTool
+	InstallCompanionTools(toolIDs []string, onProgress func(tool domain.CompanionTool, status string, err error)) error
+	IsFirstRun() bool
+	MarkFirstRunCompleted() error
+}
