@@ -1,6 +1,6 @@
 # Agent Guidelines for neossh
 
-This file provides rules and conventions for AI assistants (Antigravity, Copilot, Cursor, etc.) and developers working in this repository.
+This file provides rules and conventions for AI assistants (Antigravity, Claude Code, Copilot, Cursor, etc.) and developers working in this repository. `CLAUDE.md` only imports this file: edit the rules here.
 
 ## 🚨 Mandatory Documentation Rule: NEVER FORGET THE README
 
@@ -24,4 +24,5 @@ Whenever you implement a new feature (`feat`), CLI flag, configuration option, U
 
 1. Work on dedicated feature/bugfix branches.
 2. Link the issue in the PR description (`Closes #<id>`).
-3. Squash and merge using `gh pr merge <id> --squash --admin --delete-branch`.
+3. Squash and merge with `gh pr merge <id> --squash --delete-branch`, only once CI is green. Never use `--admin`: it bypasses the required checks.
+4. Never merge the Release Please PR (`chore(main): release …`): releasing is the maintainer's decision.
