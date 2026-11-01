@@ -9,7 +9,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.13.10
 	github.com/kevinburke/ssh_config v1.4.0
 	github.com/mattn/go-runewidth v0.0.31
-	github.com/pkg/sftp v1.13.11
+	github.com/pkg/sftp v1.13.12
 	github.com/rivo/tview v0.42.0
 	github.com/spf13/cobra v1.10.2
 	github.com/zalando/go-keyring v0.2.8
